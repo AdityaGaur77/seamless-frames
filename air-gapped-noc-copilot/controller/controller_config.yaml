@@ -44,7 +44,7 @@ model:
   scaler_path: best_model.pth.scalers.pkl
   architecture: lstm_multitask   # lstm_multitask | lstm | tcn | hybrid
   device: cpu
-  anomaly_threshold: 0.5         # skip RAG below this probability
+  anomaly_threshold: 0.0         # fire full pipeline on every reading for demo
   severity_high_threshold: 0.85
   severity_medium_threshold: 0.65
   tti_minutes_min: 0
