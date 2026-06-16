@@ -1,0 +1,287 @@
+[
+  {
+    "name": "fs_congestion_predicted",
+    "alert": {
+      "alert_id": "PE-1037",
+      "severity": "P3",
+      "risk_band": "ELEVATED",
+      "model_name": "ensemble-v3",
+      "model_confidence": 0.78,
+      "time_to_impact_minutes": 22,
+      "signals": [
+        {"metric": "if_out_util_pct", "device": "pe-hub-east-1", "interface": "eth3", "value": 71.4, "trend": "rising"},
+        {"metric": "queue_depth_bytes", "device": "pe-hub-east-1", "interface": "eth3", "queue": "AF21-data", "value": 482000, "trend": "rising"}
+      ],
+      "site": "hub-east",
+      "vrf": "cust-blue"
+    },
+    "evidence": [
+      {
+        "chunk_id": "11111111111111111111111111111111",
+        "metadata": {"doc_type": "topology", "source": "corpus/topology/topology_reference.yaml"},
+        "score": 0.71,
+        "text": "pe-hub-east-1 connects 4 branches and 1 DC over MPLS. Uplink eth3 to p-core-1 is 40G."
+      },
+      {
+        "chunk_id": "22222222222222222222222222222222",
+        "metadata": {"doc_type": "runbook", "runbook_id": "MPLS-003", "source": "corpus/runbooks/mpls/MPLS-003_underlay_loss.md"},
+        "score": 0.65,
+        "text": "Step 6. Apply a soft pre-emptive reroute by raising the TE cost of the affected link by 1000. Step 8. Rollback: revert the TE cost."
+      }
+    ],
+    "response": {
+      "schema_version": "1.0.0",
+      "alert_id": "PE-1037",
+      "generated_at": "2026-05-15T09:21:00Z",
+      "answer_grounded": true,
+      "missing_context": [],
+      "predicted_issue": {
+        "type": "congestion_saturation",
+        "target": {"device": "pe-hub-east-1", "interface_or_peer": "eth3", "vrf": "cust-blue", "site": "hub-east"},
+        "time_to_impact_minutes": 22,
+        "confidence": 0.74
+      },
+      "root_cause_hypothesis": {
+        "summary": "The pe-hub-east-1 uplink eth3 to p-core-1 is rising toward saturation (71.4% and trending up). Combined with rising AF21 queue depth, voice and video classes will start dropping within ~22 minutes if the trend continues.",
+        "signals": [
+          {"metric": "if_out_util_pct", "value": 71.4, "trend": "rising"},
+          {"metric": "queue_depth_bytes[AF21-data]", "value": 482000, "trend": "rising"}
+        ],
+        "evidence_chunks": [
+          {"chunk_id": "11111111111111111111111111111111", "quote": "pe-hub-east-1 connects 4 branches and 1 DC over MPLS. Uplink eth3 to p-core-1 is 40G.", "relevance": "Identifies the affected link and its capacity."},
+          {"chunk_id": "22222222222222222222222222222222", "quote": "Apply a soft pre-emptive reroute by raising the TE cost of the affected link by 1000.", "relevance": "Provides the reroute procedure."}
+        ],
+        "confidence": 0.74
+      },
+      "affected_scope": {
+        "sites": ["hub-east"],
+        "vrfs": ["cust-blue"],
+        "services": ["voice", "video", "data"],
+        "estimated_users_affected": 1200
+      },
+      "recommended_actions": [
+        {
+          "order": 1,
+          "action": "reroute_te",
+          "target": "pe-hub-east-1 eth3",
+          "risk": "low",
+          "expected_effect": "Offload ~15-25% of traffic from the saturated link; queue depth on AF21 should fall within 5 min.",
+          "rollback": "no mpls traffic-eng interface eth3 metric 2000",
+          "linked_runbook_chunk_id": "22222222222222222222222222222222"
+        },
+        {
+          "order": 2,
+          "action": "raise_log_level",
+          "target": "pe-hub-east-1",
+          "risk": "low",
+          "expected_effect": "Capture per-class drops so we can confirm the impact in 10 min.",
+          "rollback": "no logging level",
+          "linked_runbook_chunk_id": null
+        }
+      ],
+      "operator_questions": {
+        "q1_what_will_fail": "The pe-hub-east-1 uplink eth3 to p-core-1 is forecast to saturate in ~22 minutes, dropping voice and video on cust-blue.",
+        "q2_why_elevated_risk": "if_out_util_pct on eth3 is 71.4% and rising; AF21-data queue depth is 482000 bytes and rising. The ensemble model has 0.78 confidence based on the recent 18-minute trend.",
+        "q3_corrective_action": "Open a change ticket, then raise the TE cost on pe-hub-east-1 eth3 by 1000 per MPLS-003 step 6. Monitor AF21 drops for 10 minutes; rollback with the inverse command if traffic shifts are unexpected."
+      },
+      "warnings": ["TIME_SENSITIVE"],
+      "provenance": {
+        "model_name": "ensemble-v3",
+        "model_revision": "rev-2026-05-12",
+        "embedding_model_fingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+        "index_manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "retrieval_score_dense": 0.68,
+        "retrieval_score_lex": 0.12,
+        "evidence_chunks": [
+          {"chunk_id": "11111111111111111111111111111111", "doc_type": "topology", "source": "corpus/topology/topology_reference.yaml", "score": 0.71},
+          {"chunk_id": "22222222222222222222222222222222", "doc_type": "runbook", "source": "corpus/runbooks/mpls/MPLS-003_underlay_loss.md", "score": 0.65}
+        ]
+      }
+    }
+  },
+  {
+    "name": "fs_underlay_loss",
+    "alert": {
+      "alert_id": "MPLS-2241",
+      "severity": "P2",
+      "risk_band": "ELEVATED",
+      "model_name": "tunnel-health-v2",
+      "model_confidence": 0.81,
+      "time_to_impact_minutes": 15,
+      "signals": [
+        {"metric": "if_in_errors_rate", "device": "pe-hub-east-1", "interface": "eth1", "value": 28.4, "trend": "rising"},
+        {"metric": "ldp_session_holdtime", "device": "pe-hub-east-1", "peer": "10.255.0.1", "value": 11.0, "trend": "falling"},
+        {"metric": "sdwan_tunnel_jitter_ms", "tunnel_id": "sdwan-nyc-sfo", "quantile": "p95", "value": 12.0, "trend": "rising"}
+      ],
+      "site": "hub-east",
+      "vrf": "cust-blue"
+    },
+    "evidence": [
+      {
+        "chunk_id": "33333333333333333333333333333333",
+        "metadata": {"doc_type": "runbook", "runbook_id": "MPLS-003", "source": "corpus/runbooks/mpls/MPLS-003_underlay_loss.md"},
+        "score": 0.86,
+        "text": "Step 1. Identify the underlay link using the affected P/PE loopbacks. Step 6. Apply a soft pre-emptive reroute by raising the TE cost of the affected link by 1000."
+      },
+      {
+        "chunk_id": "44444444444444444444444444444444",
+        "metadata": {"doc_type": "incident_detail", "incident_id": "INC-2026-03-14-001", "source": "corpus/incidents/INC-2026-03-14-001_underlay_loss.md"},
+        "score": 0.79,
+        "text": "Root cause: a fibre splice in the east ring degraded over several days, producing CRC errors that gradually exceeded the link's FEC correction capacity."
+      }
+    ],
+    "response": {
+      "schema_version": "1.0.0",
+      "alert_id": "MPLS-2241",
+      "generated_at": "2026-05-15T10:02:00Z",
+      "answer_grounded": true,
+      "missing_context": [],
+      "predicted_issue": {
+        "type": "underlay_packet_loss",
+        "target": {"device": "pe-hub-east-1", "interface_or_peer": "eth1", "vrf": "cust-blue", "site": "hub-east"},
+        "time_to_impact_minutes": 15,
+        "confidence": 0.80
+      },
+      "root_cause_hypothesis": {
+        "summary": "Rising CRC errors on pe-hub-east-1 eth1, falling LDP holdtime, and rising jitter on the sdwan-nyc-sfo tunnel are a textbook precursor pattern for an MPLS underlay fibre degradation. The most recent comparable incident (INC-2026-03-14-001) was a degraded fibre splice on the same hub-east ring.",
+        "signals": [
+          {"metric": "if_in_errors_rate", "value": 28.4, "trend": "rising"},
+          {"metric": "ldp_session_holdtime", "value": 11.0, "trend": "falling"},
+          {"metric": "sdwan_tunnel_jitter_ms[p95]", "value": 12.0, "trend": "rising"}
+        ],
+        "evidence_chunks": [
+          {"chunk_id": "33333333333333333333333333333333", "quote": "Apply a soft pre-emptive reroute by raising the TE cost of the affected link by 1000.", "relevance": "The MPLS-003 reroute procedure."},
+          {"chunk_id": "44444444444444444444444444444444", "quote": "a fibre splice in the east ring degraded over several days, producing CRC errors", "relevance": "Prior incident with the same signal pattern."}
+        ],
+        "confidence": 0.80
+      },
+      "affected_scope": {
+        "sites": ["hub-east", "branch-nyc", "branch-sfo"],
+        "vrfs": ["cust-blue"],
+        "services": ["voice", "video", "data"],
+        "estimated_users_affected": 850
+      },
+      "recommended_actions": [
+        {
+          "order": 1,
+          "action": "open_change_ticket",
+          "target": "TE reroute on pe-hub-east-1 eth1",
+          "risk": "low",
+          "expected_effect": "Captures the change in the audit log and pages the on-call if the reroute is rolled back automatically.",
+          "rollback": "close ticket after reroute is reverted",
+          "linked_runbook_chunk_id": "33333333333333333333333333333333"
+        },
+        {
+          "order": 2,
+          "action": "reroute_te",
+          "target": "pe-hub-east-1 eth1",
+          "risk": "low",
+          "expected_effect": "Offload traffic from the degrading link; voice impact should clear within 90 s per INC-2026-03-14-001.",
+          "rollback": "no mpls traffic-eng interface eth1 metric 2000",
+          "linked_runbook_chunk_id": "33333333333333333333333333333333"
+        },
+        {
+          "order": 3,
+          "action": "page_oncall",
+          "target": "facilities-team",
+          "risk": "low",
+          "expected_effect": "Dispatch fibre OTDR test for the east ring within 30 min.",
+          "rollback": "acknowledge page if test is cancelled",
+          "linked_runbook_chunk_id": null
+        }
+      ],
+      "operator_questions": {
+        "q1_what_will_fail": "The pe-hub-east-1 \u2194 p-core-1 underlay will exceed 2% loss in ~15 minutes, dropping voice on the sdwan-nyc-sfo tunnel.",
+        "q2_why_elevated_risk": "CRC error rate on eth1 is 28.4/s and rising; LDP holdtime is dropping from 15s to 11s; tunnel jitter p95 is 12ms and rising. INC-2026-03-14-001 was the same signal pattern on the same ring.",
+        "q3_corrective_action": "Open a change ticket, raise the TE cost on pe-hub-east-1 eth1 by 1000 per MPLS-003, and page facilities to dispatch an OTDR for the east ring."
+      },
+      "warnings": ["TIME_SENSITIVE"],
+      "provenance": {
+        "model_name": "tunnel-health-v2",
+        "model_revision": "rev-2026-05-12",
+        "embedding_model_fingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+        "index_manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "retrieval_score_dense": 0.83,
+        "retrieval_score_lex": 0.31,
+        "evidence_chunks": [
+          {"chunk_id": "33333333333333333333333333333333", "doc_type": "runbook", "source": "corpus/runbooks/mpls/MPLS-003_underlay_loss.md", "score": 0.86},
+          {"chunk_id": "44444444444444444444444444444444", "doc_type": "incident_detail", "source": "corpus/incidents/INC-2026-03-14-001_underlay_loss.md", "score": 0.79}
+        ]
+      }
+    }
+  },
+  {
+    "name": "fs_unknown_under_evidence",
+    "alert": {
+      "alert_id": "BGP-9912",
+      "severity": "P3",
+      "risk_band": "WATCH",
+      "model_name": "bgp-flap-detector",
+      "model_confidence": 0.31,
+      "time_to_impact_minutes": null,
+      "signals": [
+        {"metric": "bgp_session_down_total", "peer": "10.255.99.99", "value": 1, "trend": "spike"}
+      ],
+      "site": "branch-zzz",
+      "vrf": "mgmt"
+    },
+    "evidence": [],
+    "response": {
+      "schema_version": "1.0.0",
+      "alert_id": "BGP-9912",
+      "generated_at": "2026-05-15T11:14:00Z",
+      "answer_grounded": false,
+      "missing_context": [
+        "No runbook chunk in the local corpus covers peer 10.255.99.99",
+        "No topology chunk for site 'branch-zzz' in the local corpus",
+        "No prior incident with this signal pattern"
+      ],
+      "predicted_issue": {
+        "type": "unknown",
+        "target": {"device": "unknown", "interface_or_peer": "10.255.99.99", "vrf": "mgmt", "site": "branch-zzz"},
+        "time_to_impact_minutes": null,
+        "confidence": 0.0
+      },
+      "root_cause_hypothesis": {
+        "summary": "Insufficient evidence: the local corpus has no runbook, topology entry, or prior incident referencing peer 10.255.99.99 or site branch-zzz. Cannot ground a root cause.",
+        "signals": [
+          {"metric": "bgp_session_down_total", "value": 1, "trend": "spike"}
+        ],
+        "evidence_chunks": [],
+        "confidence": 0.0
+      },
+      "affected_scope": {
+        "sites": ["branch-zzz"],
+        "vrfs": ["mgmt"],
+        "services": ["mgmt"],
+        "estimated_users_affected": 0
+      },
+      "recommended_actions": [
+        {
+          "order": 1,
+          "action": "escalate_to_team",
+          "target": "neteng-oncall",
+          "risk": "low",
+          "expected_effect": "Pages a human to verify the unknown device/peer before any action is taken.",
+          "rollback": "acknowledge page",
+          "linked_runbook_chunk_id": null
+        }
+      ],
+      "operator_questions": {
+        "q1_what_will_fail": "Unknown \u2014 the device/peer in the alert is not present in the local corpus, so the Copilot cannot ground a prediction.",
+        "q2_why_elevated_risk": "Only one weak signal (bgp_session_down_total spike) is present and no runbook or prior incident covers this case in the local corpus.",
+        "q3_corrective_action": "Escalate to the on-call neteng team with the alert_id; do not take automated action until the device/peer is verified and added to the corpus."
+      },
+      "warnings": ["INSUFFICIENT_EVIDENCE", "OUTSIDE_RUNBOOK_SCOPE"],
+      "provenance": {
+        "model_name": "bgp-flap-detector",
+        "model_revision": "rev-2026-05-12",
+        "embedding_model_fingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+        "index_manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "retrieval_score_dense": 0.0,
+        "retrieval_score_lex": 0.0,
+        "evidence_chunks": []
+      }
+    }
+  }
+]

@@ -1,0 +1,14 @@
+train=9  val=3  device=cpu
+model params: 4.03M
+ep 001/3  loss=4.0641  val_dice=0.000  val_iou=0.000  occ_recall=0.000  (7.3s)
+Traceback (most recent call last):
+  File "C:\Users\adity\Downloads\real-port\test\route-resilience\train.py", line 145, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\adity\Downloads\real-port\test\route-resilience\train.py", line 133, in main
+    print(f"  \u2713 saved {out} (iou={i:.3f})")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2713' in position 2: character maps to <undefined>

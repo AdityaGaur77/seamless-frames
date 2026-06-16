@@ -1,0 +1,122 @@
+[
+  {
+    "id": "urban_000",
+    "terrain": "urban",
+    "seed": 42
+  },
+  {
+    "id": "urban_001",
+    "terrain": "urban",
+    "seed": 43
+  },
+  {
+    "id": "urban_002",
+    "terrain": "urban",
+    "seed": 44
+  },
+  {
+    "id": "urban_003",
+    "terrain": "urban",
+    "seed": 45
+  },
+  {
+    "id": "urban_004",
+    "terrain": "urban",
+    "seed": 46
+  },
+  {
+    "id": "urban_005",
+    "terrain": "urban",
+    "seed": 47
+  },
+  {
+    "id": "urban_006",
+    "terrain": "urban",
+    "seed": 48
+  },
+  {
+    "id": "urban_007",
+    "terrain": "urban",
+    "seed": 49
+  },
+  {
+    "id": "forested_000",
+    "terrain": "forested",
+    "seed": 50
+  },
+  {
+    "id": "forested_001",
+    "terrain": "forested",
+    "seed": 51
+  },
+  {
+    "id": "forested_002",
+    "terrain": "forested",
+    "seed": 52
+  },
+  {
+    "id": "forested_003",
+    "terrain": "forested",
+    "seed": 53
+  },
+  {
+    "id": "forested_004",
+    "terrain": "forested",
+    "seed": 54
+  },
+  {
+    "id": "forested_005",
+    "terrain": "forested",
+    "seed": 55
+  },
+  {
+    "id": "forested_006",
+    "terrain": "forested",
+    "seed": 56
+  },
+  {
+    "id": "forested_007",
+    "terrain": "forested",
+    "seed": 57
+  },
+  {
+    "id": "rural_000",
+    "terrain": "rural",
+    "seed": 58
+  },
+  {
+    "id": "rural_001",
+    "terrain": "rural",
+    "seed": 59
+  },
+  {
+    "id": "rural_002",
+    "terrain": "rural",
+    "seed": 60
+  },
+  {
+    "id": "rural_003",
+    "terrain": "rural",
+    "seed": 61
+  },
+  {
+    "id": "rural_004",
+    "terrain": "rural",
+    "seed": 62
+  },
+  {
+    "id": "rural_005",
+    "terrain": "rural",
+    "seed": 63
+  },
+  {
+    "id": "rural_006",
+    "terrain": "rural",
+    "seed": 64
+  },
+  {
+    "id": "rural_007",
+    "terrain": "rural",
+    "seed": 65
+  }
+]

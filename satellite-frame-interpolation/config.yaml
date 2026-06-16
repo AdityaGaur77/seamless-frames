@@ -1,0 +1,16 @@
+input_dir: data/demo
+output_dir: demo_output
+variable_name: TIR1
+interpolation_factor: 2
+time_step_minutes: 20
+demo:
+  num_frames: 4
+  height: 128
+  width: 128
+  seed: 42
+  cloud_speed: 3.0
+metrics:
+  psnr_data_range: 255.0
+  use_fsims: true
+dashboard:
+  max_frames: 12

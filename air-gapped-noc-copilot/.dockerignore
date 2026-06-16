@@ -1,0 +1,12 @@
+__pycache__
+*.pyc
+*.pyo
+.git
+.gitignore
+*.md
+!m3/**/*.md
+m3/rag/corpus/
+checkpoints/
+*.log
+.vscode/
+.idea/

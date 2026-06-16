@@ -1,0 +1,313 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://noc-copilot.local/schemas/response.v1.json",
+  "title": "NOC Copilot Operator Response",
+  "description": "Strict output contract for the offline LLM. The LLM MUST emit a single JSON object matching this schema. Any output that does not validate is rejected by the runtime and the operator sees a 'copilot_unavailable' banner.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "alert_id",
+    "generated_at",
+    "answer_grounded",
+    "predicted_issue",
+    "root_cause_hypothesis",
+    "affected_scope",
+    "recommended_actions",
+    "operator_questions",
+    "warnings",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Pinned schema version. The runtime refuses to parse any other value."
+    },
+    "alert_id": {
+      "type": "string",
+      "pattern": "^[A-Z]{2,5}-[0-9]{4,7}$",
+      "description": "The alert identifier this response is answering. Echoed from the input alert payload."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp. The runtime stamps this on the model output; the LLM must not invent a time."
+    },
+    "answer_grounded": {
+      "type": "boolean",
+      "description": "True only if every factual claim in this response is supported by a citation in `provenance.evidence_chunks`."
+    },
+    "missing_context": {
+      "type": "array",
+      "description": "Required when answer_grounded is false. Lists what would have been needed.",
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 240
+      },
+      "maxItems": 10
+    },
+    "predicted_issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "target", "time_to_impact_minutes", "confidence"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "congestion_saturation",
+            "underlay_packet_loss",
+            "bgp_session_flap",
+            "ospf_convergence_stress",
+            "tunnel_degradation",
+            "policy_drift",
+            "asymmetric_path",
+            "qos_starvation",
+            "device_resource_exhaustion",
+            "unknown"
+          ],
+          "description": "Closed enumeration. The LLM must choose from this list; 'unknown' is allowed only when answer_grounded is false."
+        },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["device", "interface_or_peer", "vrf", "site"],
+          "properties": {
+            "device": { "type": "string", "minLength": 1, "maxLength": 64 },
+            "interface_or_peer": { "type": "string", "minLength": 1, "maxLength": 128 },
+            "vrf": { "type": "string", "minLength": 1, "maxLength": 32 },
+            "site": { "type": "string", "minLength": 1, "maxLength": 32 }
+          }
+        },
+        "time_to_impact_minutes": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "maximum": 4320,
+          "description": "Predicted minutes until SLA breach. null is allowed only when answer_grounded is false."
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Model confidence in this prediction. 0.0 means 'I do not know'."
+        }
+      }
+    },
+    "root_cause_hypothesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "signals", "evidence_chunks", "confidence"],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 600,
+          "description": "One-paragraph root cause hypothesis. Must not invent device names or interfaces that are not in the alert payload or in evidence_chunks."
+        },
+        "signals": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["metric", "value", "trend"],
+            "properties": {
+              "metric": { "type": "string", "minLength": 1, "maxLength": 128 },
+              "value": { "type": ["string", "number"] },
+              "trend": { "type": "string", "enum": ["rising", "falling", "flat", "spike", "unknown"] }
+            }
+          }
+        },
+        "evidence_chunks": {
+          "type": "array",
+          "description": "Citations to retrieved chunks that ground the hypothesis. Each chunk_id must appear in `provenance.evidence_chunks`.",
+          "minItems": 0,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["chunk_id", "quote", "relevance"],
+            "properties": {
+              "chunk_id": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+              "quote": { "type": "string", "minLength": 1, "maxLength": 400 },
+              "relevance": { "type": "string", "minLength": 1, "maxLength": 240 }
+            }
+          }
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        }
+      }
+    },
+    "affected_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sites", "vrfs", "services", "estimated_users_affected"],
+      "properties": {
+        "sites": { "type": "array", "items": { "type": "string" }, "maxItems": 32, "uniqueItems": true },
+        "vrfs": { "type": "array", "items": { "type": "string" }, "maxItems": 16, "uniqueItems": true },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["voice", "video", "data", "scavenger", "mgmt", "dns", "ntp", "auth", "db", "other"]
+          },
+          "maxItems": 16,
+          "uniqueItems": true
+        },
+        "estimated_users_affected": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        }
+      }
+    },
+    "recommended_actions": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["order", "action", "target", "risk", "expected_effect", "rollback", "linked_runbook_chunk_id"],
+        "properties": {
+          "order": { "type": "integer", "minimum": 1, "maximum": 8 },
+          "action": {
+            "type": "string",
+            "enum": [
+              "reroute_te",
+              "preempt_failover",
+              "lower_bfd_timer",
+              "pin_policy",
+              "increase_queue_weight",
+              "rekey_tunnel",
+              "raise_log_level",
+              "open_change_ticket",
+              "page_oncall",
+              "no_action_monitor",
+              "escalate_to_team"
+            ]
+          },
+          "target": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "risk": { "type": "string", "enum": ["low", "medium", "high"] },
+          "expected_effect": { "type": "string", "minLength": 5, "maxLength": 240 },
+          "rollback": { "type": "string", "minLength": 0, "maxLength": 240 },
+          "linked_runbook_chunk_id": {
+            "type": ["string", "null"],
+            "pattern": "^[a-f0-9]{32}$"
+          }
+        }
+      }
+    },
+    "operator_questions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["q1_what_will_fail", "q2_why_elevated_risk", "q3_corrective_action"],
+      "description": "Mandatory structured answers to the three operator-facing questions defined in the project specification.",
+      "properties": {
+        "q1_what_will_fail": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        },
+        "q2_why_elevated_risk": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 600
+        },
+        "q3_corrective_action": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 600
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "string",
+        "enum": [
+          "STALE_INDEX",
+          "INSUFFICIENT_EVIDENCE",
+          "MODEL_DEGRADED",
+          "EMBEDDER_FALLBACK",
+          "TIME_SENSITIVE",
+          "POLICY_CONFLICT",
+          "OUTSIDE_RUNBOOK_SCOPE",
+          "TRUNCATED"
+        ]
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_name", "model_revision", "embedding_model_fingerprint", "index_manifest_sha256", "evidence_chunks"],
+      "properties": {
+        "model_name": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "model_revision": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "embedding_model_fingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "index_manifest_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "retrieval_score_dense": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "retrieval_score_lex": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "evidence_chunks": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["chunk_id", "doc_type", "source", "score"],
+            "properties": {
+              "chunk_id": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+              "doc_type": { "type": "string", "enum": ["topology", "runbook", "incident_detail", "incident_summary"] },
+              "source": { "type": "string", "minLength": 1, "maxLength": 256 },
+              "score": { "type": "number", "minimum": 0.0, "maximum": 1.0 }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "description": "Cross-field: if answer_grounded is false, predicted_issue.time_to_impact_minutes must be null and the issue type must be 'unknown'.",
+      "if": {
+        "properties": { "answer_grounded": { "const": false } },
+        "required": ["answer_grounded"]
+      },
+      "then": {
+        "properties": {
+          "predicted_issue": {
+            "required": ["time_to_impact_minutes"],
+            "properties": {
+              "type": { "const": "unknown" },
+              "time_to_impact_minutes": { "type": "null" }
+            }
+          },
+          "missing_context": { "minItems": 1 }
+        }
+      }
+    },
+    {
+      "description": "Cross-field: every chunk_id cited in root_cause_hypothesis.evidence_chunks must exist in provenance.evidence_chunks (validated at runtime by the validator, schema ensures shape).",
+      "properties": {
+        "root_cause_hypothesis": {
+          "properties": {
+            "evidence_chunks": {
+              "items": {
+                "properties": {
+                  "chunk_id": { "pattern": "^[a-f0-9]{32}$" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

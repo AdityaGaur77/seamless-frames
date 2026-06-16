@@ -1,0 +1,83 @@
+# ───────────────────────────────────────────────────────────────────
+# Air-Gapped NOC Copilot — Phase 3 Orchestrator (controller) config
+# ───────────────────────────────────────────────────────────────────
+#
+# This file is the only place the operator edits the loop's behaviour.
+# Paths are resolved relative to the project root (the directory that
+# contains the `controller/` package).
+#
+# Common overrides at the CLI:
+#   python -m controller.orchestrator --config controller/controller_config.yaml
+#   python -m controller.orchestrator --once
+#   python -m controller.orchestrator --max-cycles 5
+# ───────────────────────────────────────────────────────────────────
+
+sample_interval_seconds: 30      # wall-clock period between cycles
+max_cycles: 0                    # 0 = run forever; >0 = stop after N cycles
+log_level: INFO                  # DEBUG / INFO / WARNING / ERROR
+fail_loud: true                  # publish a banner on any cycle error
+
+# ── Live telemetry sampler (Phase 1 / 2) ────────────────────────
+sampler:
+  backend: timescaledb           # timescaledb | prometheus | fixture
+  sequence_length: 60            # lookback window in ticks
+  num_features: 25               # MUST match data_preprocessor.PreprocessingConfig
+  tick_seconds: 10
+  poll_timeout_seconds: 5
+  target_hosts: []               # [] = enumerate from DB
+  target_interfaces: []
+  active_window_seconds: 300
+  # TimescaleDB
+  db_host: 127.0.0.1
+  db_port: 5432
+  db_name: noc_telemetry
+  db_user: postgres
+  db_password: noc_copilot_db
+  db_connect_timeout: 5
+  # Prometheus (used when backend=prometheus)
+  prometheus_url: http://127.0.0.1:9090
+  prometheus_query_chunk_seconds: 600
+
+# ── Predictive model (Phase 3) ──────────────────────────────────
+model:
+  model_path: best_model.pth
+  scaler_path: best_model.pth.scalers.pkl
+  architecture: lstm_multitask   # lstm_multitask | lstm | tcn | hybrid
+  device: cpu
+  anomaly_threshold: 0.5         # skip RAG below this probability
+  severity_high_threshold: 0.85
+  severity_medium_threshold: 0.65
+  tti_minutes_min: 0
+  tti_minutes_max: 1440
+  warmup_cycles: 1
+
+# ── RAG (Phase 4 — m3/rag) ──────────────────────────────────────
+rag:
+  config_path: m3/rag/rag_config.yaml
+  index_root: m3/rag/index
+  top_k: 8
+  context_token_budget: 3500
+  default_filters: {}            # site/device/protocol merged with alert
+
+# ── Offline LLM (Phase 5) ───────────────────────────────────────
+llm:
+  backend: ollama               # openai | ollama
+  # OpenAI-compatible (llama.cpp / vLLM / Ollama-compat mode)
+  base_url: http://127.0.0.1:8080
+  api_path: /v1/chat/completions
+  model_name: airgap-noc
+  request_timeout_seconds: 60
+  max_retries: 1
+  temperature: 0.1
+  top_p: 0.9
+  max_tokens: 1024
+  # Ollama native API (used when backend == "ollama")
+  ollama_url: http://127.0.0.1:11434
+  ollama_model: llama3:latest
+  ollama_num_ctx: 4096
+  ollama_num_gpu: -1             # -1 = auto-detect
+
+# ── Output sinks ────────────────────────────────────────────────
+sink:
+  ndjson_path: ""                # empty = stdout; one JSON per cycle
+  latest_path: ""                # empty = disabled; sidecar latest

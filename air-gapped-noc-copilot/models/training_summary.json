@@ -1,0 +1,92 @@
+{
+  "timestamp": "2026-06-16T02:43:48.400178",
+  "device": "cpu",
+  "metadata": {
+    "num_features": 25,
+    "feature_names": [
+      "interface_utilization",
+      "interface_in_errors",
+      "interface_out_errors",
+      "interface_in_discards",
+      "interface_out_discards",
+      "interface_in_packets",
+      "interface_out_packets",
+      "latency_avg_ms",
+      "latency_jitter_ms",
+      "packet_loss_percent",
+      "ospf_neighbor_state",
+      "ospf_dead_timer",
+      "bgp_fsm_transitions",
+      "bgp_update_rate",
+      "mpls_ldp_state_changes",
+      "ipsec_throughput_bps",
+      "ipsec_error_rate",
+      "congestion_trend",
+      "queue_depth",
+      "tti_estimate",
+      "hour_of_day",
+      "day_of_week",
+      "is_peak_hour",
+      "cpu_utilization",
+      "memory_utilization"
+    ],
+    "sequence_length": 30,
+    "forecast_horizon": 5,
+    "train_size": 6976,
+    "val_size": 1495,
+    "test_size": 1495,
+    "scaler_type": "robust"
+  },
+  "models_trained": [
+    "lstm",
+    "tcn",
+    "hybrid"
+  ],
+  "model_results": {
+    "lstm": {
+      "best_val_loss": 0.13740512492888152,
+      "metrics": {
+        "mse": 0.16023719310760498,
+        "rmse": 0.4002963815819536,
+        "mae": 0.26691558957099915,
+        "mape": 11314484.0,
+        "r_squared": 0.3549641966819763,
+        "correlation": 0.6261736260359699,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "num_samples": 7475
+      }
+    },
+    "tcn": {
+      "best_val_loss": 0.08653889895055165,
+      "metrics": {
+        "mse": 0.16326086223125458,
+        "rmse": 0.40405551874866724,
+        "mae": 0.3362783193588257,
+        "mape": 16777130.0,
+        "r_squared": 0.3427923917770386,
+        "correlation": 0.5863311748288783,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "num_samples": 7475
+      }
+    },
+    "hybrid": {
+      "best_val_loss": 0.09014433150258945,
+      "metrics": {
+        "mse": 0.1796131581068039,
+        "rmse": 0.42380792596033867,
+        "mae": 0.33319979906082153,
+        "mape": 19360004.0,
+        "r_squared": 0.2769661545753479,
+        "correlation": 0.5443867638175673,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "num_samples": 7475
+      }
+    }
+  }
+}

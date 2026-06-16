@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "C:\Users\adity\Downloads\real-port\test\route-resilience\verify.py", line 166, in main
+    df = run_on_dataset(ckpt_path, data_dir, out_dir,
+                        device="cpu", base=16, save_overlay=False)
+TypeError: run_on_dataset() got an unexpected keyword argument 'base'
+============================================================
+ROUTE-RESILIENCE  END-TO-END  SELF-VERIFICATION
+============================================================
+  [PASS]  data has at least 4 tiles  -  found 12 tiles
+  [PASS]  model forward 256x256 -> 256x256  -  main=(1, 1, 256, 256), params=4.03M
+  [PASS]  pipeline does not crash on any tile
+  [FAIL]  model produces >0.5% road on every tile  -  0/12
+  [FAIL]  skeleton has nodes+edges on every tile  -  0/12
+  [PASS]  healing runs without crash
+  [FAIL]  ablation step 1 lowers efficiency on every tile  -  0/12
+  [FAIL]  run_on_dataset  -  run_on_dataset() got an unexpected keyword argument 'base'
+
+============================================================
+  5/9 checks passed
+  OVERALL: FAIL
+============================================================

@@ -1,0 +1,19 @@
+train=9  val=3  device=cpu
+model params: 4.03M
+ep 001/8  loss=3.8801  val_dice=0.000  val_iou=0.000  occ_recall=0.000  (6.1s)
+  [saved] checkpoints\best.pt (iou=0.000)
+ep 002/8  loss=3.6232  val_dice=0.000  val_iou=0.000  occ_recall=0.000  (6.0s)
+ep 003/8  loss=3.5515  val_dice=0.001  val_iou=0.001  occ_recall=0.021  (6.0s)
+  [saved] checkpoints\best.pt (iou=0.001)
+ep 004/8  loss=3.4707  val_dice=0.072  val_iou=0.038  occ_recall=0.073  (6.0s)
+  [saved] checkpoints\best.pt (iou=0.038)
+ep 005/8  loss=3.5904  val_dice=0.206  val_iou=0.118  occ_recall=0.218  (6.0s)
+  [saved] checkpoints\best.pt (iou=0.118)
+ep 006/8  loss=3.4866  val_dice=0.264  val_iou=0.153  occ_recall=0.357  (6.2s)
+  [saved] checkpoints\best.pt (iou=0.153)
+ep 007/8  loss=3.5366  val_dice=0.566  val_iou=0.398  occ_recall=0.507  (6.5s)
+  [saved] checkpoints\best.pt (iou=0.398)
+ep 008/8  loss=3.4368  val_dice=0.676  val_iou=0.516  occ_recall=0.564  (6.0s)
+  [saved] checkpoints\best.pt (iou=0.516)
+
+Done. best val IoU = 0.516

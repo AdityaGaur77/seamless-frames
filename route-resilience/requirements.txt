@@ -1,0 +1,13 @@
+torch>=2.0
+torchvision
+numpy
+opencv-python-headless
+scikit-image>=0.21
+scipy
+networkx>=3.0
+matplotlib
+pillow
+streamlit
+pydeck
+rasterio
+shapely

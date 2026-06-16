@@ -1,0 +1,213 @@
+name: mpls-sdwan-copilot
+
+prefix: mpls
+
+mgmt:
+  network: management
+  bridge: br-mpls
+  ipv4-subnet: 172.20.0.0/24
+
+topology:
+  nodes:
+    # ── Core MPLS Provider Routers (P role) ──
+    p-core-1:
+      kind: linux
+      image: frrouting/frr:v8.4.2
+      mgmt-ipv4: 172.20.0.10
+      cmd: /usr/lib/frr/docker-start
+      binds:
+        - node-frr.conf:/etc/frr/frr.conf
+        - daemons:/etc/frr/daemons
+      env:
+        FRR_DEFAULTS: traditional
+      ports:
+        - "161:161/udp"
+
+    p-core-2:
+      kind: linux
+      image: frrouting/frr:v8.4.2
+      mgmt-ipv4: 172.20.0.11
+      cmd: /usr/lib/frr/docker-start
+      binds:
+        - node-frr.conf:/etc/frr/frr.conf
+        - daemons:/etc/frr/daemons
+      env:
+        FRR_DEFAULTS: traditional
+      ports:
+        - "161:161/udp"
+
+    # ── Hub Site PE Routers ──
+    pe-hub-east-1:
+      kind: linux
+      image: frrouting/frr:v8.4.2
+      mgmt-ipv4: 172.20.0.20
+      cmd: /usr/lib/frr/docker-start
+      binds:
+        - node-frr.conf:/etc/frr/frr.conf
+        - daemons:/etc/frr/daemons
+      env:
+        FRR_DEFAULTS: traditional
+      ports:
+        - "161:161/udp"
+
+    pe-hub-west-1:
+      kind: linux
+      image: frrouting/frr:v8.4.2
+      mgmt-ipv4: 172.20.0.21
+      cmd: /usr/lib/frr/docker-start
+      binds:
+        - node-frr.conf:/etc/frr/frr.conf
+        - daemons:/etc/frr/daemons
+      env:
+        FRR_DEFAULTS: traditional
+      ports:
+        - "161:161/udp"
+
+    # ── Datacenter PE Routers ──
+    pe-dc-1:
+      kind: linux
+      image: frrouting/frr:v8.4.2
+      mgmt-ipv4: 172.20.0.30
+      cmd: /usr/lib/frr/docker-start
+      binds:
+        - node-frr.conf:/etc/frr/frr.conf
+        - daemons:/etc/frr/daemons
+      env:
+        FRR_DEFAULTS: traditional
+      ports:
+        - "161:161/udp"
+
+    pe-dc-2:
+      kind: linux
+      image: frrouting/frr:v8.4.2
+      mgmt-ipv4: 172.20.0.31
+      cmd: /usr/lib/frr/docker-start
+      binds:
+        - node-frr.conf:/etc/frr/frr.conf
+        - daemons:/etc/frr/daemons
+      env:
+        FRR_DEFAULTS: traditional
+      ports:
+        - "161:161/udp"
+
+    # ── Branch Site CE/SD-WAN Routers ──
+    ce-branch-1:
+      kind: linux
+      image: frrouting/frr:v8.4.2
+      mgmt-ipv4: 172.20.0.40
+      cmd: /usr/lib/frr/docker-start
+      binds:
+        - node-frr.conf:/etc/frr/frr.conf
+        - daemons:/etc/frr/daemons
+      env:
+        FRR_DEFAULTS: traditional
+      ports:
+        - "161:161/udp"
+
+    ce-branch-2:
+      kind: linux
+      image: frrouting/frr:v8.4.2
+      mgmt-ipv4: 172.20.0.41
+      cmd: /usr/lib/frr/docker-start
+      binds:
+        - node-frr.conf:/etc/frr/frr.conf
+        - daemons:/etc/frr/daemons
+      env:
+        FRR_DEFAULTS: traditional
+      ports:
+        - "161:161/udp"
+
+    ce-branch-3:
+      kind: linux
+      image: frrouting/frr:v8.4.2
+      mgmt-ipv4: 172.20.0.42
+      cmd: /usr/lib/frr/docker-start
+      binds:
+        - node-frr.conf:/etc/frr/frr.conf
+        - daemons:/etc/frr/daemons
+      env:
+        FRR_DEFAULTS: traditional
+      ports:
+        - "161:161/udp"
+
+    ce-branch-4:
+      kind: linux
+      image: frrouting/frr:v8.4.2
+      mgmt-ipv4: 172.20.0.43
+      cmd: /usr/lib/frr/docker-start
+      binds:
+        - node-frr.conf:/etc/frr/frr.conf
+        - daemons:/etc/frr/daemons
+      env:
+        FRR_DEFAULTS: traditional
+      ports:
+        - "161:161/udp"
+
+    # ── Telemetry Collector Node ──
+    telegraf-collector:
+      kind: linux
+      image: telegraf:1.28-alpine
+      mgmt-ipv4: 172.20.0.100
+      cmd: /usr/bin/telegraf --config /etc/telegraf/telegraf.conf
+      binds:
+        - telegraf.conf:/etc/telegraf/telegraf.conf
+      ports:
+        - "8125:8125/udp"
+        - "5140:5140/udp"
+        - "9092:9092"
+
+    # ── Prometheus Instance ──
+    prometheus:
+      kind: linux
+      image: prom/prometheus:v2.47.0
+      mgmt-ipv4: 172.20.0.110
+      cmd: /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.retention.time=90d
+      binds:
+        - prometheus.yml:/etc/prometheus/prometheus.yml
+      ports:
+        - "9090:9090"
+
+    # ── TimescaleDB Instance ──
+    timescaledb:
+      kind: linux
+      image: timescale/timescaledb:latest-pg15
+      mgmt-ipv4: 172.20.0.120
+      cmd: postgres
+      env:
+        POSTGRES_PASSWORD: noc_copilot_db
+        POSTGRES_DB: noc_telemetry
+      ports:
+        - "5432:5432"
+
+  links:
+    # ── Core MPLS backbone links (P-P) ──
+    - endpoints: ["p-core-1:eth1", "p-core-2:eth2"]
+
+    # ── Hub PE to Core P links ──
+    - endpoints: ["pe-hub-east-1:eth1", "p-core-1:eth3"]
+    - endpoints: ["pe-hub-west-1:eth2", "p-core-2:eth4"]
+
+    # ── DC PE to Core P links ──
+    - endpoints: ["pe-dc-1:eth3", "p-core-1:eth5"]
+    - endpoints: ["pe-dc-2:eth4", "p-core-2:eth6"]
+
+    # ── Cross-hub and DC links ──
+    - endpoints: ["pe-hub-east-1:eth3", "pe-dc-1:eth5"]
+    - endpoints: ["pe-hub-west-1:eth4", "pe-dc-2:eth6"]
+
+    # ── Branch to Hub PE links (Spoke topology) ──
+    - endpoints: ["ce-branch-1:eth5", "pe-hub-east-1:eth5"]
+    - endpoints: ["ce-branch-2:eth6", "pe-hub-east-1:eth6"]
+    - endpoints: ["ce-branch-3:eth7", "pe-hub-west-1:eth7"]
+    - endpoints: ["ce-branch-4:eth8", "pe-hub-west-1:eth8"]
+
+    # ── Branch-to-branch (full mesh for SD-WAN overlay testing) ──
+    - endpoints: ["ce-branch-1:eth6", "ce-branch-3:eth5"]
+    - endpoints: ["ce-branch-2:eth7", "ce-branch-4:eth6"]
+
+    # ── Telemetry and monitoring links ──
+    - endpoints: ["telegraf-collector:eth10", "p-core-1:eth10"]
+    - endpoints: ["telegraf-collector:eth11", "pe-hub-east-1:eth10"]
+    - endpoints: ["telegraf-collector:eth12", "pe-dc-1:eth10"]
+    - endpoints: ["prometheus:eth15", "telegraf-collector:eth15"]
+    - endpoints: ["timescaledb:eth20", "telegraf-collector:eth20"]

@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://noc-copilot.local/schemas/alert.v1.json",
+  "title": "ALERT_PAYLOAD",
+  "description": "Strict output contract of the predictive engine (controller/model_scorer.py) and the input to m3.prompts.prompt_assembler. Every field is the deterministic product of the LSTM/TCN inference plus the raw signals that drove it; the LLM is forbidden to invent any value in this object.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "alert_id",
+    "generated_at",
+    "severity",
+    "risk_band",
+    "predicted_issue",
+    "signals",
+    "model",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "alert_id": {
+      "type": "string",
+      "pattern": "^ALR-[0-9]{4,10}$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["P1", "P2", "P3", "P4"]
+    },
+    "risk_band": {
+      "type": "string",
+      "enum": ["CRITICAL", "ELEVATED", "GUARDED", "BASELINE", "UNKNOWN"]
+    },
+    "predicted_issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "target", "time_to_impact_minutes", "confidence"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "congestion_saturation",
+            "underlay_packet_loss",
+            "bgp_session_flap",
+            "ospf_convergence_stress",
+            "tunnel_degradation",
+            "policy_drift",
+            "asymmetric_path",
+            "qos_starvation",
+            "device_resource_exhaustion",
+            "unknown"
+          ]
+        },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["device", "interface_or_peer", "vrf", "site"],
+          "properties": {
+            "device": { "type": "string", "minLength": 1, "maxLength": 64 },
+            "interface_or_peer": { "type": "string", "minLength": 1, "maxLength": 128 },
+            "vrf": { "type": "string", "minLength": 1, "maxLength": 32 },
+            "site": { "type": "string", "minLength": 1, "maxLength": 32 }
+          }
+        },
+        "time_to_impact_minutes": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "maximum": 4320
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        }
+      }
+    },
+    "signals": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["metric", "value", "trend", "host", "interface"],
+        "properties": {
+          "metric": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "value": { "type": ["string", "number"] },
+          "trend": { "type": "string", "enum": ["rising", "falling", "flat", "spike", "unknown"] },
+          "host": { "type": "string", "minLength": 1, "maxLength": 64 },
+          "interface": { "type": "string", "minLength": 1, "maxLength": 64 },
+          "ts": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "architecture", "device", "horizon", "outputs"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "version": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "architecture": { "type": "string", "enum": ["lstm_multitask", "tcn", "hybrid"] },
+        "device": { "type": "string", "enum": ["cpu", "cuda"] },
+        "horizon": { "type": "integer", "minimum": 1, "maximum": 1440 },
+        "outputs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["forecast", "anomaly_prob", "tti_minutes"],
+          "properties": {
+            "forecast": { "type": "array", "items": { "type": "number" } },
+            "anomaly_prob": { "type": "array", "items": { "type": "number", "minimum": 0.0, "maximum": 1.0 } },
+            "tti_minutes": { "type": "array", "items": { "type": "number", "minimum": 0.0 } }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sampler", "sequence_length", "num_features", "checkpoint_sha256"],
+      "properties": {
+        "sampler": { "type": "string", "enum": ["timescaledb", "prometheus", "fixture"] },
+        "sequence_length": { "type": "integer", "minimum": 1 },
+        "num_features": { "type": "integer", "minimum": 1 },
+        "checkpoint_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "scaler_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    }
+  }
+}

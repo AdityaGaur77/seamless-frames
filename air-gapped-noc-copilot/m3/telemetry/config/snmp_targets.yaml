@@ -1,0 +1,90 @@
+agents:
+  - name: "pe-hub-east-1"
+    address: "172.20.0.20:161"
+    version: 2
+    community: "noc-ro"
+    timeout: "5s"
+    retries: 2
+    max_repetitions: 25
+    sec_name: "noc-user"
+    sec_level: "authPriv"
+    auth_protocol: "SHA"
+    auth_password: "REPLACE_AT_DEPLOY"
+    priv_protocol: "AES"
+    priv_password: "REPLACE_AT_DEPLOY"
+    interface_tags:
+      - ifIndex
+      - ifDescr
+      - ifName
+  - name: "pe-hub-west-1"
+    address: "172.20.0.21:161"
+    version: 2
+    community: "noc-ro"
+    interface_tags:
+      - ifIndex
+      - ifDescr
+      - ifName
+  - name: "pe-dc-1"
+    address: "172.20.0.30:161"
+    version: 2
+    community: "noc-ro"
+    interface_tags:
+      - ifIndex
+      - ifDescr
+      - ifName
+  - name: "pe-dc-2"
+    address: "172.20.0.31:161"
+    version: 2
+    community: "noc-ro"
+    interface_tags:
+      - ifIndex
+      - ifDescr
+      - ifName
+  - name: "ce-branch-1"
+    address: "172.20.0.40:161"
+    version: 2
+    community: "noc-ro"
+    interface_tags:
+      - ifIndex
+      - ifDescr
+      - ifName
+  - name: "ce-branch-2"
+    address: "172.20.0.41:161"
+    version: 2
+    community: "noc-ro"
+    interface_tags:
+      - ifIndex
+      - ifDescr
+      - ifName
+  - name: "ce-branch-3"
+    address: "172.20.0.42:161"
+    version: 2
+    community: "noc-ro"
+    interface_tags:
+      - ifIndex
+      - ifDescr
+      - ifName
+  - name: "ce-branch-4"
+    address: "172.20.0.43:161"
+    version: 2
+    community: "noc-ro"
+    interface_tags:
+      - ifIndex
+      - ifDescr
+      - ifName
+  - name: "p-core-1"
+    address: "172.20.0.10:161"
+    version: 2
+    community: "noc-ro"
+    interface_tags:
+      - ifIndex
+      - ifDescr
+      - ifName
+  - name: "p-core-2"
+    address: "172.20.0.11:161"
+    version: 2
+    community: "noc-ro"
+    interface_tags:
+      - ifIndex
+      - ifDescr
+      - ifName

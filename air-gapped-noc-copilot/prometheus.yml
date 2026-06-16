@@ -1,0 +1,170 @@
+# ╔═══════════════════════════════════════════════════════════════╗
+# ║ Air-Gapped NOC Copilot - Prometheus Configuration            ║
+# ║ Time-Series Storage for Network Telemetry                    ║
+# ╚═══════════════════════════════════════════════════════════════╝
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  query_timeout: 30s
+  external_labels:
+    environment: "air-gapped-lab"
+    project: "noc-copilot"
+
+# ── Alertmanager Configuration ──
+rule_files:
+  - /etc/prometheus/alerts/*.yml
+
+# ── Scrape Targets ──
+scrape_configs:
+  # ── Telegraf Metrics ──
+  - job_name: "telegraf"
+    static_configs:
+      - targets: ["telegraf-collector:9092"]
+        labels:
+          source: "telegraf"
+
+  # ── Network Device SNMP Metrics (via Telegraf) ──
+  - job_name: "snmp-interface"
+    static_configs:
+      - targets: ["telegraf-collector:9092"]
+        labels:
+          metric_type: "interface"
+
+  # ── OSPF/BGP Routing Metrics ──
+  - job_name: "routing-metrics"
+    static_configs:
+      - targets: ["telegraf-collector:9092"]
+        labels:
+          metric_type: "routing"
+
+  # ── IPSec Tunnel Metrics ──
+  - job_name: "ipsec-tunnel"
+    static_configs:
+      - targets: ["telegraf-collector:9092"]
+        labels:
+          metric_type: "ipsec"
+
+  # ── Syslog Metrics ──
+  - job_name: "syslog"
+    static_configs:
+      - targets: ["telegraf-collector:9092"]
+        labels:
+          metric_type: "syslog"
+
+  # ── Prometheus Self-Monitoring ──
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # ── Node Exporter (if deployed) ──
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+# ── Recording Rules for Predictive Model Training ──
+# These pre-computed metrics are used by the ML pipeline
+groups:
+  - name: interface_utilization
+    interval: 10s
+    rules:
+      # Interface utilization percentage
+      - record: interface:utilization:percent
+        expr: |
+          (
+            rate(if_in_octets[5m]) * 8
+          )
+          /
+          (
+            if_speed_bps > 0
+          )
+          * 100
+
+      # Interface error rate
+      - record: interface:errors:rate
+        expr: |
+          rate(if_in_errors[5m]) + rate(if_out_errors[5m])
+
+      # Interface discard rate
+      - record: interface:discards:rate
+        expr: |
+          rate(if_in_discards[5m]) + rate(if_out_discards[5m])
+
+      # Interface packet rate
+      - record: interface:packets:rate
+        expr: |
+          rate(if_in_unicast_packets[5m]) + rate(if_out_unicast_packets[5m])
+
+  - name: latency_metrics
+    interval: 10s
+    rules:
+      # Average ping latency
+      - record: latency:average:ms
+        expr: ping_average_response_ms
+
+      # Ping packet loss
+      - record: latency:packet_loss:percent
+        expr: |
+          (ping_packets_received - ping_packets_transmitted)
+          /
+          ping_packets_transmitted
+          * 100
+
+  - name: routing_stability
+    interval: 30s
+    rules:
+      # OSPF adjacency changes rate
+      - record: ospf:adjacency_changes:rate
+        expr: rate(ospf_neighbor_state[5m])
+
+      # BGP FSM transition rate
+      - record: bgp:fsm_transitions:rate
+        expr: rate(bgp_fsm_transitions[5m])
+
+      # BGP update rate
+      - record: bgp:update_rate
+        expr: rate(bgp_in_updates[5m]) + rate(bgp_out_updates[5m])
+
+      # MPLS LDP state change rate
+      - record: mpls:ldp_changes:rate
+        expr: rate(mpls_ldp_state_changes[5m])
+
+  - name: ipsec_health
+    interval: 30s
+    rules:
+      # IPSec packet loss
+      - record: ipsec:packet_loss:rate
+        expr: |
+          rate(ipsec_in_errors[5m]) + rate(ipsec_out_errors[5m])
+          /
+          (rate(ipsec_encrypted_pkts[5m]) + rate(ipsec_decrypted_pkts[5m]))
+
+      # IPSec encryption rate
+      - record: ipsec:throughput:bps
+        expr: |
+          rate(ipsec_encrypted_pkts[5m]) + rate(ipsec_decrypted_pkts[5m])
+
+  - name: congestion_detection
+    interval: 10s
+    rules:
+      # Congestion buildup detection (utilization trend)
+      - record: congestion:trend:delta
+        expr: |
+          interface:utilization:percent
+          -
+          interface:utilization:percent offset 5m
+
+      # Queue depth estimation (based on drops)
+      - record: congestion:queue_depth:est
+        expr: |
+          rate(if_out_discards[2m])
+          /
+          rate(if_out_octets[2m])
+
+      # Time-to-impact estimation (in seconds)
+      - record: congestion:tti:est
+        expr: |
+          (100 - interface:utilization:percent)
+          /
+          congestion:trend:delta
+          * 60

@@ -1,0 +1,52 @@
+embed:
+  model_name: "BAAI/bge-small-en-v1.5"
+  model_path: "./models/bge-small-en-v1.5"
+  dimension: 384
+  batch_size: 32
+  normalize: true
+  query_prefix: "Represent this sentence for searching relevant passages: "
+
+retriever:
+  backend: "chroma"
+  chroma_path: "./index/chroma"
+  chroma_collection: "noc_copilot_v1"
+  qdrant_url: "http://127.0.0.1:6333"
+  qdrant_collection: "noc_copilot_v1"
+  hybrid_weight_dense: 0.7
+  hybrid_weight_lex: 0.3
+  top_k: 8
+  rerank: false
+  context_token_budget: 3500
+
+index:
+  max_index_age_days: 30
+  manifest_path: "./index/index_manifest.json"
+
+corpus:
+  roots:
+    - "./corpus/topology"
+    - "./corpus/runbooks"
+    - "./corpus/incidents"
+  file_globs:
+    - "*.md"
+    - "*.txt"
+    - "*.yaml"
+    - "*.yml"
+    - "*.json"
+
+chunker:
+  topology:
+    target_tokens: 140
+    overlap_tokens: 0
+  runbook:
+    target_tokens: 350
+    overlap_tokens: 50
+  incident:
+    detail_target_tokens: 300
+    summary_target_tokens: 80
+    overlap_tokens: 0
+
+runtime:
+  log_level: "INFO"
+  offline_mode: true
+  refuse_network_calls: true

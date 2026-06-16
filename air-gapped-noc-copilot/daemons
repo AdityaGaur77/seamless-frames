@@ -1,0 +1,15 @@
+# FRR Daemons Configuration
+bgpd=yes
+ospfd=yes
+ospf6d=no
+ripd=no
+ripngd=no
+isisd=no
+pimd=no
+ldpd=no
+bfdd=yes
+staticd=yes
+nhrpd=no
+eigrpd=no
+sharpd=no
+vrrpd=no

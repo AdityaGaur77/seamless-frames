@@ -1,0 +1,191 @@
+# ╔═══════════════════════════════════════════════════════════════╗
+# ║ Air-Gapped NOC Copilot — Production Stack                    ║
+# ║ TimescaleDB + Prometheus + Telegraf + Orchestrator + Grafana  ║
+# ║                                                               ║
+# ║ All images are local or pre-pulled. No internet required.    ║
+# ║ Ollama runs on the HOST; the orchestrator reaches it via     ║
+# ║ host.docker.internal (or 172.17.0.1 on Linux bridge).         ║
+# ╚═══════════════════════════════════════════════════════════════╝
+
+version: '3.8'
+
+# ─────────────────────────────────────────────────────────────
+# Networks
+# ─────────────────────────────────────────────────────────────
+networks:
+  noc-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+# ─────────────────────────────────────────────────────────────
+# Persistent volumes
+# ─────────────────────────────────────────────────────────────
+volumes:
+  prometheus-data:
+    driver: local
+  timescaledb-data:
+    driver: local
+  telegraf-logs:
+    driver: local
+  grafana-data:
+    driver: local
+  ollama-models:
+    driver: local
+
+# ─────────────────────────────────────────────────────────────
+# Services
+# ─────────────────────────────────────────────────────────────
+services:
+
+  # ── TimescaleDB ────────────────────────────────────────────
+  # PostgreSQL 15 + TimescaleDB extension.
+  # Schema is bootstrapped from init-timescaledb.sql on first run.
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: noc-timescaledb
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: noc_copilot_db
+      POSTGRES_DB: noc_telemetry
+      POSTGRES_USER: postgres
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - timescaledb-data:/var/lib/postgresql/data
+      - ./init-timescaledb.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      noc-network:
+        ipv4_address: 172.20.0.120
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d noc_telemetry"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ── Prometheus ─────────────────────────────────────────────
+  # Pulls metrics from the Telegraf collector and the node-exporter.
+  # Pre-loaded with recording rules for the predictive model.
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: noc-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=90d'
+      - '--storage.tsdb.retention.size=50GB'
+      - '--web.enable-lifecycle'
+      - '--web.enable-remote-write-receiver'
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      noc-network:
+        ipv4_address: 172.20.0.110
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+
+  # ── Telegraf ───────────────────────────────────────────────
+  # Collects SNMP / ping / NetFlow / syslog from the lab topology
+  # and exposes them on :9092 for Prometheus scraping.
+  telegraf:
+    image: telegraf:1.28-alpine
+    container_name: noc-telegraf
+    restart: unless-stopped
+    command: telegraf --config /etc/telegraf/telegraf.conf
+    environment:
+      - HOSTNAME=telegraf-collector
+      - TZ=UTC
+    ports:
+      - "8125:8125/udp"
+      - "5140:5140/udp"
+      - "9092:9092"
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - telegraf-logs:/var/log/telegraf
+    networks:
+      noc-network:
+        ipv4_address: 172.20.0.100
+    depends_on:
+      - prometheus
+
+  # ── Orchestrator (the NOC Copilot brain) ───────────────────
+  # Builds from the local Dockerfile.  Connects to TimescaleDB
+  # for live telemetry, Prometheus as fallback, and the Ollama
+  # server running on the Docker host for LLM inference.
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: noc-orchestrator
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
+      - PYTHONUNBUFFERED=1
+      # Override controller_config.yaml DB targets to use the
+      # Docker network addresses.
+      - ORCHESTRATOR_DB_HOST=172.20.0.120
+      - ORCHESTRATOR_DB_PORT=5432
+      - ORCHESTRATOR_PROMETHEUS_URL=http://172.20.0.110:9090
+      # Reach Ollama on the Docker host via the extra_hosts mapping.
+      - ORCHESTRATOR_OLLAMA_URL=http://host.docker.internal:11434
+    volumes:
+      - ./controller/controller_config.yaml:/app/controller/controller_config.yaml:ro
+      - ./best_model.pth:/app/best_model.pth:ro
+      - ./best_model.pth.scalers.pkl:/app/best_model.pth.scalers.pkl:ro
+    networks:
+      noc-network:
+        ipv4_address: 172.20.0.200
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      prometheus:
+        condition: service_started
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # ── Grafana ────────────────────────────────────────────────
+  # Dashboards for the NOC wall display.
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: noc-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=noc_copilot_2024
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      noc-network:
+        ipv4_address: 172.20.0.130
+    depends_on:
+      - prometheus
+
+  # ── Node Exporter ──────────────────────────────────────────
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: noc-node-exporter
+    restart: unless-stopped
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "127.0.0.1:9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      noc-network:
+        ipv4_address: 172.20.0.140

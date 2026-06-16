@@ -1,0 +1,452 @@
+{
+  "checks": {
+    "data_exists": true,
+    "data_count": true,
+    "topology_crash": true,
+    "gt_road_present": true,
+    "gt_skeleton": true,
+    "gt_heal_lcc": true,
+    "gt_betw_finite": true,
+    "gt_eff_positive": true,
+    "gt_ablation": true,
+    "model_loaded": true,
+    "report_written": true,
+    "report_complete": true
+  },
+  "per_tile_topology": [
+    {
+      "tile": "forested_000",
+      "road_pct": 15.83,
+      "nodes": 1773,
+      "edges": 83,
+      "bridges_added": 25,
+      "lcc_before": 2,
+      "lcc_after": 9,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "forested_001",
+      "road_pct": 13.43,
+      "nodes": 1190,
+      "edges": 44,
+      "bridges_added": 42,
+      "lcc_before": 3,
+      "lcc_after": 14,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0001,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "forested_002",
+      "road_pct": 9.75,
+      "nodes": 1056,
+      "edges": 48,
+      "bridges_added": 18,
+      "lcc_before": 2,
+      "lcc_after": 6,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "forested_003",
+      "road_pct": 18.35,
+      "nodes": 2156,
+      "edges": 76,
+      "bridges_added": 33,
+      "lcc_before": 2,
+      "lcc_after": 16,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0001,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "forested_004",
+      "road_pct": 12.41,
+      "nodes": 1070,
+      "edges": 62,
+      "bridges_added": 23,
+      "lcc_before": 3,
+      "lcc_after": 8,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "forested_005",
+      "road_pct": 8.74,
+      "nodes": 829,
+      "edges": 30,
+      "bridges_added": 28,
+      "lcc_before": 4,
+      "lcc_after": 15,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0002,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "forested_006",
+      "road_pct": 26.05,
+      "nodes": 2395,
+      "edges": 99,
+      "bridges_added": 37,
+      "lcc_before": 3,
+      "lcc_after": 7,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "forested_007",
+      "road_pct": 21.39,
+      "nodes": 2232,
+      "edges": 110,
+      "bridges_added": 25,
+      "lcc_before": 3,
+      "lcc_after": 7,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "rural_000",
+      "road_pct": 20.47,
+      "nodes": 2208,
+      "edges": 87,
+      "bridges_added": 34,
+      "lcc_before": 3,
+      "lcc_after": 10,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "rural_001",
+      "road_pct": 17.18,
+      "nodes": 2522,
+      "edges": 97,
+      "bridges_added": 66,
+      "lcc_before": 2,
+      "lcc_after": 24,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0001,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "rural_002",
+      "road_pct": 12.78,
+      "nodes": 1720,
+      "edges": 69,
+      "bridges_added": 74,
+      "lcc_before": 3,
+      "lcc_after": 31,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0002,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "rural_003",
+      "road_pct": 9.49,
+      "nodes": 812,
+      "edges": 34,
+      "bridges_added": 14,
+      "lcc_before": 2,
+      "lcc_after": 5,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "rural_004",
+      "road_pct": 8.03,
+      "nodes": 1095,
+      "edges": 46,
+      "bridges_added": 55,
+      "lcc_before": 3,
+      "lcc_after": 23,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0002,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "rural_005",
+      "road_pct": 20.72,
+      "nodes": 1915,
+      "edges": 80,
+      "bridges_added": 47,
+      "lcc_before": 2,
+      "lcc_after": 24,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0001,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "rural_006",
+      "road_pct": 21.19,
+      "nodes": 2365,
+      "edges": 94,
+      "bridges_added": 48,
+      "lcc_before": 3,
+      "lcc_after": 11,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "rural_007",
+      "road_pct": 21.79,
+      "nodes": 1722,
+      "edges": 106,
+      "bridges_added": 17,
+      "lcc_before": 3,
+      "lcc_after": 7,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "urban_000",
+      "road_pct": 26.32,
+      "nodes": 2457,
+      "edges": 122,
+      "bridges_added": 67,
+      "lcc_before": 3,
+      "lcc_after": 16,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0001,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "urban_001",
+      "road_pct": 30.18,
+      "nodes": 1882,
+      "edges": 138,
+      "bridges_added": 12,
+      "lcc_before": 3,
+      "lcc_after": 4,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "urban_002",
+      "road_pct": 16.16,
+      "nodes": 1486,
+      "edges": 83,
+      "bridges_added": 51,
+      "lcc_before": 3,
+      "lcc_after": 11,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "urban_003",
+      "road_pct": 22.8,
+      "nodes": 1822,
+      "edges": 85,
+      "bridges_added": 43,
+      "lcc_before": 3,
+      "lcc_after": 10,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "urban_004",
+      "road_pct": 19.5,
+      "nodes": 1798,
+      "edges": 89,
+      "bridges_added": 46,
+      "lcc_before": 4,
+      "lcc_after": 11,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "urban_005",
+      "road_pct": 18.69,
+      "nodes": 990,
+      "edges": 66,
+      "bridges_added": 7,
+      "lcc_before": 4,
+      "lcc_after": 4,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "urban_006",
+      "road_pct": 12.09,
+      "nodes": 1128,
+      "edges": 54,
+      "bridges_added": 27,
+      "lcc_before": 2,
+      "lcc_after": 10,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    },
+    {
+      "tile": "urban_007",
+      "road_pct": 23.34,
+      "nodes": 2034,
+      "edges": 109,
+      "bridges_added": 25,
+      "lcc_before": 3,
+      "lcc_after": 6,
+      "global_efficiency": 0.0,
+      "top_node_centrality": 0.0,
+      "ablation_step1_eff": 0.0
+    }
+  ],
+  "per_tile_model": {
+    "forested_000": {
+      "iou": 0.178,
+      "dice": 0.302,
+      "pred_road_pct": 12.86,
+      "gt_road_pct": 15.83
+    },
+    "forested_001": {
+      "iou": 0.157,
+      "dice": 0.271,
+      "pred_road_pct": 8.11,
+      "gt_road_pct": 13.43
+    },
+    "forested_002": {
+      "iou": 0.222,
+      "dice": 0.364,
+      "pred_road_pct": 15.5,
+      "gt_road_pct": 9.75
+    },
+    "forested_003": {
+      "iou": 0.211,
+      "dice": 0.349,
+      "pred_road_pct": 13.22,
+      "gt_road_pct": 18.35
+    },
+    "forested_004": {
+      "iou": 0.196,
+      "dice": 0.328,
+      "pred_road_pct": 10.25,
+      "gt_road_pct": 12.41
+    },
+    "forested_005": {
+      "iou": 0.166,
+      "dice": 0.285,
+      "pred_road_pct": 14.29,
+      "gt_road_pct": 8.74
+    },
+    "forested_006": {
+      "iou": 0.248,
+      "dice": 0.397,
+      "pred_road_pct": 15.13,
+      "gt_road_pct": 26.05
+    },
+    "forested_007": {
+      "iou": 0.175,
+      "dice": 0.297,
+      "pred_road_pct": 14.76,
+      "gt_road_pct": 21.39
+    },
+    "rural_000": {
+      "iou": 0.325,
+      "dice": 0.49,
+      "pred_road_pct": 62.14,
+      "gt_road_pct": 20.47
+    },
+    "rural_001": {
+      "iou": 0.261,
+      "dice": 0.414,
+      "pred_road_pct": 64.53,
+      "gt_road_pct": 17.18
+    },
+    "rural_002": {
+      "iou": 0.196,
+      "dice": 0.328,
+      "pred_road_pct": 64.62,
+      "gt_road_pct": 12.78
+    },
+    "rural_003": {
+      "iou": 0.163,
+      "dice": 0.28,
+      "pred_road_pct": 57.88,
+      "gt_road_pct": 9.49
+    },
+    "rural_004": {
+      "iou": 0.138,
+      "dice": 0.242,
+      "pred_road_pct": 57.57,
+      "gt_road_pct": 8.03
+    },
+    "rural_005": {
+      "iou": 0.316,
+      "dice": 0.48,
+      "pred_road_pct": 65.06,
+      "gt_road_pct": 20.72
+    },
+    "rural_006": {
+      "iou": 0.305,
+      "dice": 0.468,
+      "pred_road_pct": 68.9,
+      "gt_road_pct": 21.19
+    },
+    "rural_007": {
+      "iou": 0.323,
+      "dice": 0.488,
+      "pred_road_pct": 66.98,
+      "gt_road_pct": 21.79
+    },
+    "urban_000": {
+      "iou": 0.518,
+      "dice": 0.682,
+      "pred_road_pct": 42.47,
+      "gt_road_pct": 26.32
+    },
+    "urban_001": {
+      "iou": 0.536,
+      "dice": 0.698,
+      "pred_road_pct": 46.78,
+      "gt_road_pct": 30.18
+    },
+    "urban_002": {
+      "iou": 0.367,
+      "dice": 0.537,
+      "pred_road_pct": 37.11,
+      "gt_road_pct": 16.16
+    },
+    "urban_003": {
+      "iou": 0.487,
+      "dice": 0.655,
+      "pred_road_pct": 41.55,
+      "gt_road_pct": 22.8
+    },
+    "urban_004": {
+      "iou": 0.406,
+      "dice": 0.577,
+      "pred_road_pct": 30.14,
+      "gt_road_pct": 19.5
+    },
+    "urban_005": {
+      "iou": 0.381,
+      "dice": 0.552,
+      "pred_road_pct": 38.88,
+      "gt_road_pct": 18.69
+    },
+    "urban_006": {
+      "iou": 0.25,
+      "dice": 0.401,
+      "pred_road_pct": 31.36,
+      "gt_road_pct": 12.09
+    },
+    "urban_007": {
+      "iou": 0.5,
+      "dice": 0.666,
+      "pred_road_pct": 35.78,
+      "gt_road_pct": 23.34
+    }
+  }
+}

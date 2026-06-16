@@ -1,0 +1,37 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+  external_labels:
+    network: air-gapped-mpls-sdwan
+    environment: containerlab
+
+scrape_configs:
+  - job_name: telegraf
+    static_configs:
+      - targets: ['172.20.0.100:9124']
+        labels:
+          component: 'snmp_and_netflow_exporter'
+          source: 'telegraf'
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ['127.0.0.1:9090']
+
+  - job_name: nodes
+    static_configs:
+      - targets: ['172.20.0.100:9100']
+
+  - job_name: snmp_collector_python
+    static_configs:
+      - targets: ['172.20.0.100:9126']
+        labels:
+          component: 'snmp_collector_py'
+
+  - job_name: netflow_collector_python
+    static_configs:
+      - targets: ['172.20.0.100:9127']
+        labels:
+          component: 'netflow_collector_py'
+
+rule_files:
+  - /etc/prometheus/rules/*.yml

@@ -1,0 +1,114 @@
+---
+version: v3.2
+generated_at: "2026-05-12T09:00:00Z"
+description: "Reference topology for the air-gapped NOC Copilot demo lab. Mirrors the Containerlab topology.clab.yml at the repo root, but is normalised into a single graph-style document for the RAG retriever."
+---
+
+devices:
+  - id: p-core-1
+    role: P
+    site: core-1
+    asn: 64512
+    loopback: 10.255.0.1
+    description: "Core P router in the MPLS backbone; carries LDP/RSVP-TE labels for the east half of the provider network."
+
+  - id: p-core-2
+    role: P
+    site: core-2
+    asn: 64512
+    loopback: 10.255.0.2
+    description: "Core P router in the MPLS backbone; carries LDP/RSVP-TE labels for the west half of the provider network."
+
+  - id: pe-hub-east-1
+    role: PE
+    site: hub-east
+    asn: 64512
+    loopback: 10.255.1.1
+    vrfs: [cust-blue, cust-green, mgmt]
+    description: "Hub PE for the east region. Terminates 4 branch CE links and 1 DC link. Runs iBGP to both route reflectors and LDP to both P cores."
+
+  - id: pe-hub-west-1
+    role: PE
+    site: hub-west
+    asn: 64512
+    loopback: 10.255.1.2
+    vrfs: [cust-blue, cust-green, mgmt]
+    description: "Hub PE for the west region. Terminates 2 branch CE links and 1 DC link."
+
+  - id: pe-dc-1
+    role: PE
+    site: dc-east
+    asn: 64512
+    loopback: 10.255.2.1
+    vrfs: [cust-blue, mgmt]
+    description: "DC PE for the east datacenter. Hosts the customer-blue VRF exit point."
+
+  - id: ce-branch-1
+    role: CE
+    site: branch-nyc
+    asn: 65001
+    loopback: 10.10.1.1
+    vrfs: [cust-blue]
+    description: "Branch CE in New York. SD-WAN edge running dual underlay (MPLS + internet)."
+
+  - id: ce-branch-3
+    role: CE
+    site: branch-sfo
+    asn: 65003
+    loopback: 10.10.3.1
+    vrfs: [cust-blue, cust-green]
+    description: "Branch CE in San Francisco. Carries the highest traffic volume in the demo and is the primary failure injection target."
+
+links:
+  - id: core-p-p
+    endpoints: [p-core-1, p-core-2]
+    type: "P-to-P"
+    capacity_gbps: 100
+    description: "Direct 100G link between the two P cores; carries east-west backbone traffic."
+
+  - id: pe-hub-east-1--p-core-1
+    endpoints: [pe-hub-east-1, p-core-1]
+    type: "PE-to-P"
+    capacity_gbps: 40
+    description: "Hub east PE uplink to the east P core. Most likely point of progressive congestion under load."
+
+  - id: pe-hub-west-1--p-core-2
+    endpoints: [pe-hub-west-1, p-core-2]
+    type: "PE-to-P"
+    capacity_gbps: 40
+    description: "Hub west PE uplink to the west P core."
+
+vpns:
+  - id: cust-blue
+    rd: "64512:100"
+    rt_import: ["64512:100"]
+    rt_export: ["64512:100"]
+    sites: [hub-east, hub-west, dc-east, branch-nyc, branch-sfo]
+    description: "Primary customer VPN for the demo lab. All east-west application traffic rides this VRF."
+
+  - id: cust-green
+    rd: "64512:200"
+    rt_import: ["64512:200"]
+    rt_export: ["64512:200"]
+    sites: [hub-east, hub-west, branch-sfo]
+    description: "Secondary customer VPN. Used to demonstrate multi-VRF traffic engineering and policy drift."
+
+tunnels:
+  - id: sdwan-nyc-sfo
+    endpoints: [ce-branch-1, ce-branch-3]
+    type: "IPSec"
+    underlay: mpls
+    crypto_profile: AES-256-GCM
+    rekey_seconds: 3600
+    description: "SD-WAN overlay tunnel between NYC and SFO. Rekeys hourly. Loss on the underlay shows up as rekey retries before the tunnel is marked down."
+
+policies:
+  - id: qos-cust-blue
+    type: "QoS"
+    scope: "vrf=cust-blue"
+    classes:
+      - {name: voice, dscp: EF, bw_pct: 10}
+      - {name: video, dscp: AF41, bw_pct: 30}
+      - {name: data, dscp: AF21, bw_pct: 50}
+      - {name: scavenger, dscp: BE, bw_pct: 10}
+    description: "QoS policy attached to the cust-blue VRF egress queues on all PEs."

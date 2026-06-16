@@ -1,0 +1,7 @@
+betweenness: {0: 0.0, 1: 0.222, 2: 0.389, 3: 0.5, 4: 0.556, 5: 0.556, 6: 0.5, 7: 0.389, 8: 0.222, 9: 0.0}
+efficiency: 0.4287
+{'step': 1, 'removed_node': 4, 'efficiency': 0.2986111111111111, 'resilience_index': 0.6966159226496604, 'components': 2}
+{'step': 2, 'removed_node': 5, 'efficiency': 0.3095238095238095, 'resilience_index': 0.7220736473976546, 'components': 2}
+{'step': 3, 'removed_node': 3, 'efficiency': 0.3253968253968254, 'resilience_index': 0.759103065212919, 'components': 2}
+{'step': 4, 'removed_node': 6, 'efficiency': 0.3333333333333333, 'resilience_index': 0.7776177741205512, 'components': 2}
+{'step': 5, 'removed_node': 2, 'efficiency': 0.35, 'resilience_index': 0.8164986628265787, 'components': 2}

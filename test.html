@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHUTTLE — AI Badminton Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-paper-white: #ffffff;
+    --color-ink-black: #000000;
+    --color-carbon: #181818;
+    --color-ash: #6d6d6d;
+    --color-smoke: #9a9a9a;
+    --color-pewter: #808080;
+    --color-graphite: #636363;
+
+    --font-display: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+    --text-body: 16px;
+    --text-body-lg: 18px;
+    --text-subheading: 30px;
+    --text-heading-sm: 45px;
+    --text-heading: 54px;
+    --text-heading-lg: 78px;
+    --text-display: 94px;
+    --text-hero: clamp(80px, 14vw, 225px);
+
+    --spacing-8: 8px;
+    --spacing-12: 12px;
+    --spacing-28: 28px;
+    --spacing-40: 40px;
+    --spacing-48: 48px;
+    --spacing-64: 64px;
+    --spacing-68: 68px;
+    --spacing-152: 152px;
+
+    --page-max-width: 1440px;
+    --section-padding: clamp(64px, 10vw, 120px);
+
+    --radius-pill: 75px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-display);
+    background: var(--color-paper-white);
+    color: var(--color-carbon);
+    font-size: var(--text-body);
+    line-height: 1.39;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; }
+  ul { list-style: none; }
+
+  /* ───────── NAV ───────── */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 28px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.4s ease, color 0.4s ease, padding 0.4s ease;
+    color: var(--color-paper-white);
+  }
+  .nav.scrolled {
+    background: var(--color-paper-white);
+    color: var(--color-carbon);
+    padding: 18px 48px;
+  }
+  .nav-logo {
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+  }
+  .nav-logo span { font-weight: 600; }
+  .nav-menu { display: flex; gap: 28px; align-items: center; }
+  .nav-link {
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    position: relative;
+    padding: 4px 0;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 0; height: 1px;
+    background: currentColor;
+    transition: width 0.3s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+  .nav-cta {
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 6px 18px;
+    background: var(--color-paper-white);
+    color: var(--color-ink-black);
+    border-radius: var(--radius-pill);
+    transition: background 0.3s, color 0.3s;
+  }
+  .nav.scrolled .nav-cta {
+    background: var(--color-ink-black);
+    color: var(--color-paper-white);
+  }
+  .nav-cta:hover { background: var(--color-graphite); color: var(--color-paper-white); }
+
+  /* ───────── HERO ───────── */
+  .hero {
+    position: relative;
+    height: 100vh;
+    min-height: 720px;
+    background: var(--color-ink-black);
+    color: var(--color-paper-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .hero-visual {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(95vw, 1100px);
+    aspect-ratio: 1;
+    z-index: 1;
+    opacity: 0.45;
+    filter: grayscale(1) contrast(1.15);
+    background: radial-gradient(ellipse at center, rgba(255,255,255,0.4) 0%, transparent 75%);
+  }
+  .hero-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    mix-blend-mode: lighten;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 1200px;
+    padding: 0 48px;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--color-smoke);
+    margin-bottom: 48px;
+    display: inline-block;
+  }
+  .hero-eyebrow::before,
+  .hero-eyebrow::after {
+    content: '';
+    display: inline-block;
+    width: 32px;
+    height: 1px;
+    background: var(--color-smoke);
+    vertical-align: middle;
+    margin: 0 16px;
+  }
+  .hero-title {
+    font-size: var(--text-hero);
+    font-weight: 300;
+    line-height: 0.76;
+    letter-spacing: -0.03em;
+    color: var(--color-paper-white);
+    margin-bottom: 48px;
+  }
+  .hero-title em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--color-ash);
+  }
+  .hero-sub {
+    font-size: var(--text-body-lg);
+    font-weight: 300;
+    line-height: 1.36;
+    color: var(--color-ash);
+    max-width: 540px;
+    margin: 0 auto 56px;
+  }
+  .hero-actions { display: flex; gap: 14px; justify-content: center; align-items: center; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-radius: var(--radius-pill);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--color-paper-white); color: var(--color-ink-black); }
+  .btn-primary:hover { background: var(--color-ash); color: var(--color-paper-white); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-paper-white);
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+  .btn-ghost:hover { border-color: var(--color-paper-white); }
+  .btn-dark { background: var(--color-ink-black); color: var(--color-paper-white); }
+  .btn-dark:hover { background: var(--color-graphite); }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 48px; left: 48px;
+    z-index: 3;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--color-ash);
+  }
+  .scroll-indicator svg { width: 14px; height: 14px; animation: bounce 2s infinite; }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+  }
+  .hero-meta {
+    position: absolute;
+    bottom: 48px; right: 48px;
+    z-index: 3;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--color-ash);
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  /* ───────── MARQUEE ───────── */
+  .marquee {
+    background: var(--color-paper-white);
+    border-top: 1px solid rgba(0,0,0,0.08);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    overflow: hidden;
+    padding: 24px 0;
+  }
+  .marquee-track {
+    display: flex; gap: 64px;
+    animation: scroll 40s linear infinite;
+    white-space: nowrap;
+    width: max-content;
+  }
+  .marquee-item {
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--color-carbon);
+    display: flex; align-items: center; gap: 64px;
+  }
+  .marquee-item::after { content: '◆'; color: var(--color-smoke); font-size: 8px; }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ───────── SECTIONS ───────── */
+  .section {
+    padding: var(--section-padding) 48px;
+    max-width: var(--page-max-width);
+    margin: 0 auto;
+  }
+  .section-full { padding: var(--section-padding) 0; }
+  .section-label {
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--color-ash);
+    margin-bottom: 64px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .section-label::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--color-ash);
+  }
+  .section-title {
+    font-size: clamp(48px, 6vw, var(--text-heading-lg));
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--color-ink-black);
+    max-width: 1100px;
+    margin-bottom: 64px;
+  }
+  .section-title em { font-style: italic; color: var(--color-graphite); }
+
+  /* ───────── MANIFESTO ───────── */
+  .manifesto { background: var(--color-paper-white); }
+  .manifesto-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .manifesto-copy { font-size: var(--text-body-lg); line-height: 1.58; color: var(--color-carbon); }
+  .manifesto-copy p { margin-bottom: 28px; }
+  .manifesto-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px 32px;
+    padding-top: 48px;
+    border-top: 1px solid rgba(0,0,0,0.1);
+  }
+  .stat-num {
+    font-size: 78px;
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--color-ink-black);
+  }
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--color-ash);
+    margin-top: 12px;
+  }
+
+  /* ───────── DARK IMMERSIVE ───────── */
+  .dark-frame { background: var(--color-ink-black); color: var(--color-paper-white); }
+  .dark-frame .section-label { color: var(--color-smoke); }
+  .dark-frame .section-label::before { background: var(--color-smoke); }
+  .dark-frame .section-title { color: var(--color-paper-white); }
+  .dark-frame .section-title em { color: var(--color-pewter); }
+
+  /* ───────── FEATURES GRID — FIXED ───────── */
+  .features { background: var(--color-paper-white); }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .feature-card {
+    background: var(--color-carbon);
+    color: var(--color-paper-white);
+    padding: 48px 40px;
+    aspect-ratio: 4/5;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .feature-card:hover {
+    background: var(--color-ink-black);
+    transform: translateY(-6px);
+  }
+  .feature-num {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--color-smoke);
+  }
+  .feature-icon {
+    font-size: 64px;
+    font-weight: 300;
+    line-height: 1;
+    margin-bottom: 24px;
+    opacity: 0.9;
+  }
+  .feature-title {
+    font-size: 30px;
+    font-weight: 300;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-bottom: 16px;
+  }
+  .feature-desc { font-size: 14px; line-height: 1.5; color: var(--color-ash); }
+  .feature-arrow {
+    position: absolute;
+    top: 40px; right: 40px;
+    width: 32px; height: 32px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.3s, border-color 0.3s, background 0.3s;
+  }
+  .feature-card:hover .feature-arrow {
+    transform: rotate(45deg);
+    border-color: var(--color-paper-white);
+    background: rgba(255,255,255,0.05);
+  }
+
+  /* ───────── SPLIT ───────── */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .split.reverse { direction: rtl; }
+  .split.reverse > * { direction: ltr; }
+  .split-visual {
+    aspect-ratio: 4/5;
+    background: var(--color-ink-black);
+    position: relative;
+    overflow: hidden;
+  }
+  .split-visual img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.1);
+  }
+  .split-visual::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.4) 100%);
+  }
+  .split-tag {
+    position: absolute;
+    top: 32px; left: 32px;
+    z-index: 2;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--color-paper-white);
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    padding: 8px 14px;
+    border-radius: var(--radius-pill);
+  }
+  .split-content { padding: 24px 0; }
+  .split-content .section-label { margin-bottom: 32px; }
+  .split-content h3 {
+    font-size: clamp(36px, 4.5vw, var(--text-heading));
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--color-ink-black);
+    margin-bottom: 32px;
+  }
+  .dark-frame .split-content h3 { color: var(--color-paper-white); }
+  .split-content > p {
+    font-size: var(--text-body-lg);
+    line-height: 1.58;
+    margin-bottom: 16px;
+  }
+  /* Light section text */
+  .split-content > p { color: var(--color-ash); }
+  .feature-list {
+    margin: 40px 0;
+    border-top: 1px solid rgba(0,0,0,0.1);
+  }
+  .feature-list li {
+    padding: 24px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 24px;
+    align-items: baseline;
+  }
+  .feature-list .num {
+    font-size: 11px;
+    color: var(--color-smoke);
+    font-weight: 400;
+    letter-spacing: 0.1em;
+  }
+  .feature-list .text {
+    font-size: 18px;
+    font-weight: 300;
+    line-height: 1.4;
+    color: var(--color-carbon);
+  }
+  /* Dark section overrides */
+  .dark-frame .feature-list { border-color: rgba(255,255,255,0.15); }
+  .dark-frame .feature-list li { border-color: rgba(255,255,255,0.15); }
+  .dark-frame .feature-list .num { color: var(--color-smoke); }
+  .dark-frame .feature-list .text { color: var(--color-paper-white); }
+  .dark-frame .split-content > p { color: var(--color-ash); }
+
+  /* ───────── WORKFLOW ───────── */
+  .workflow { background: var(--color-paper-white); }
+  .workflow-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border-top: 1px solid rgba(0,0,0,0.1);
+  }
+  .workflow-step {
+    padding: 48px 32px 48px 0;
+    border-right: 1px solid rgba(0,0,0,0.1);
+    position: relative;
+  }
+  .workflow-step:last-child { border-right: none; padding-right: 0; }
+  .workflow-step:not(:first-child) { padding-left: 32px; }
+  .step-num {
+    font-size: 94px;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--color-ink-black);
+    margin-bottom: 32px;
+    letter-spacing: -0.03em;
+  }
+  .step-title {
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    color: var(--color-ink-black);
+  }
+  .step-desc { font-size: 14px; line-height: 1.5; color: var(--color-ash); }
+
+  /* ───────── QUOTE ───────── */
+  .quote-section {
+    background: var(--color-paper-white);
+    padding: var(--section-padding) 48px;
+    text-align: center;
+  }
+  .quote { max-width: 1100px; margin: 0 auto; }
+  .quote-text {
+    font-size: clamp(36px, 5vw, 78px);
+    font-weight: 300;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--color-ink-black);
+  }
+  .quote-text em { font-style: italic; color: var(--color-graphite); }
+  .quote-author {
+    margin-top: 48px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--color-ash);
+  }
+
+  /* ───────── CTA ───────── */
+  .cta {
+    background: var(--color-ink-black);
+    color: var(--color-paper-white);
+    padding: var(--section-padding) 48px;
+    text-align: center;
+  }
+  .cta-eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--color-smoke);
+    margin-bottom: 32px;
+  }
+  .cta-title {
+    font-size: clamp(56px, 8vw, var(--text-display));
+    font-weight: 300;
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    margin-bottom: 40px;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .cta-sub {
+    font-size: var(--text-body-lg);
+    color: var(--color-ash);
+    max-width: 520px;
+    margin: 0 auto 48px;
+    line-height: 1.5;
+  }
+  .cta-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .cta-note {
+    margin-top: 32px;
+    font-size: 11px;
+    color: var(--color-pewter);
+    letter-spacing: 0.05em;
+  }
+
+  /* ───────── FOOTER ───────── */
+  footer {
+    background: var(--color-carbon);
+    color: var(--color-paper-white);
+    padding: 80px 48px 32px;
+  }
+  .footer-grid {
+    max-width: var(--page-max-width);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 48px;
+    padding-bottom: 80px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .footer-brand h4 {
+    font-size: 30px;
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    margin-bottom: 16px;
+  }
+  .footer-brand p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-ash);
+    max-width: 320px;
+  }
+  .footer-col h5 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--color-smoke);
+    margin-bottom: 24px;
+    font-weight: 400;
+  }
+  .footer-col ul li {
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: var(--color-ash);
+    transition: color 0.3s;
+    cursor: pointer;
+  }
+  .footer-col ul li:hover { color: var(--color-paper-white); }
+  .footer-bottom {
+    max-width: var(--page-max-width);
+    margin: 32px auto 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--color-pewter);
+    letter-spacing: 0.05em;
+  }
+  .footer-bottom .legal { display: flex; gap: 28px; }
+  .footer-bottom .legal a:hover { color: var(--color-paper-white); }
+
+  /* ───────── REVEAL ───────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  /* ───────── RESPONSIVE ───────── */
+  @media (max-width: 1024px) {
+    .features-grid { grid-template-columns: 1fr 1fr; }
+    .workflow-grid { grid-template-columns: 1fr 1fr; }
+    .workflow-step:nth-child(2) { border-right: none; }
+    .split, .manifesto-grid { grid-template-columns: 1fr; gap: 48px; }
+    .split.reverse { direction: ltr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .nav { padding: 20px 24px; }
+    .nav.scrolled { padding: 14px 24px; }
+    .nav-menu { gap: 16px; }
+    .nav-menu .nav-link { display: none; }
+    .section, .quote-section, .cta, footer { padding-left: 24px; padding-right: 24px; }
+    .hero-content { padding: 0 24px; }
+    .scroll-indicator, .hero-meta { display: none; }
+    .features-grid { grid-template-columns: 1fr; }
+    .workflow-grid { grid-template-columns: 1fr; }
+    .workflow-step { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.1); }
+    .workflow-step:not(:first-child) { padding-left: 0; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+    .hero-eyebrow::before, .hero-eyebrow::after { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ───────── NAV ───────── -->
+<nav class="nav" id="nav">
+  <a href="#" class="nav-logo">shuttle<span>.</span></a>
+  <div class="nav-menu">
+    <a href="#system" class="nav-link">System</a>
+    <a href="#analyze" class="nav-link">Analyze</a>
+    <a href="#scout" class="nav-link">Scout</a>
+    <a href="#coach" class="nav-link">Coach</a>
+    <a href="#start" class="nav-cta">Get Access</a>
+  </div>
+</nav>
+
+<!-- ───────── HERO ───────── -->
+<section class="hero">
+  <div class="hero-visual">
+    <img src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=1600&q=80" alt="">
+  </div>
+  <div class="hero-content">
+    <span class="hero-eyebrow">AI Badminton Intelligence</span>
+    <h1 class="hero-title">play<br><em>smarter.</em></h1>
+    <p class="hero-sub">Record a minute of your game. Our AI breaks down every shot, every movement, every decision — and tells you exactly how to win the next one.</p>
+    <div class="hero-actions">
+      <a href="#start" class="btn btn-primary">Start Analyzing →</a>
+      <a href="#system" class="btn btn-ghost">See How</a>
+    </div>
+  </div>
+  <div class="scroll-indicator">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+    <span>Scroll to explore</span>
+  </div>
+  <div class="hero-meta">
+    Est. 2025<br>
+    Built for the court
+  </div>
+</section>
+
+<!-- ───────── MARQUEE ───────── -->
+<div class="marquee">
+  <div class="marquee-track">
+    <span class="marquee-item">AI Match Analysis</span>
+    <span class="marquee-item">Tryout Scouting</span>
+    <span class="marquee-item">Performance Tracking</span>
+    <span class="marquee-item">Pro Comparison</span>
+    <span class="marquee-item">Roster Builder</span>
+    <span class="marquee-item">Position Intelligence</span>
+    <span class="marquee-item">Coach Dashboard</span>
+    <span class="marquee-item">AI Match Analysis</span>
+    <span class="marquee-item">Tryout Scouting</span>
+    <span class="marquee-item">Performance Tracking</span>
+    <span class="marquee-item">Pro Comparison</span>
+    <span class="marquee-item">Roster Builder</span>
+    <span class="marquee-item">Position Intelligence</span>
+    <span class="marquee-item">Coach Dashboard</span>
+  </div>
+</div>
+
+<!-- ───────── MANIFESTO ───────── -->
+<section class="section manifesto">
+  <div class="reveal">
+    <span class="section-label">Manifesto — 01</span>
+    <h2 class="section-title">The badminton app that <em>actually</em> understands your game.</h2>
+  </div>
+  <div class="manifesto-grid reveal">
+    <div class="manifesto-copy">
+      <p>Most sports apps give you stats. We give you answers. Record a single minute of your gameplay — a rally, a serve, a footwork pattern — and our AI reads what's working, what's failing, and what to fix first.</p>
+      <p>Built for players who want to get better, coaches who want to spend less time guessing, and teams that want to win on purpose. No fluff. No paywalled insights. Just the clearest path between where you are and where you want to be.</p>
+      <a href="#system" class="btn btn-dark" style="margin-top: 24px;">How it works ↓</a>
+    </div>
+    <div class="manifesto-stats">
+      <div>
+        <div class="stat-num">60s</div>
+        <div class="stat-label">Avg. recording time</div>
+      </div>
+      <div>
+        <div class="stat-num">12+</div>
+        <div class="stat-label">Shot patterns tracked</div>
+      </div>
+      <div>
+        <div class="stat-num">3×</div>
+        <div class="stat-label">Faster player development</div>
+      </div>
+      <div>
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Replays to compare against</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── FEATURES GRID ───────── -->
+<section class="section-full features" id="system">
+  <div class="section">
+    <div class="reveal">
+      <span class="section-label">The System — 02</span>
+      <h2 class="section-title">Four tools. <em>One court.</em><br>Every angle of your game, decoded.</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div><div class="feature-num">01 / Record</div></div>
+        <div>
+          <div class="feature-icon">◐</div>
+          <h3 class="feature-title">60-Second AI Breakdown</h3>
+          <p class="feature-desc">Capture a rally. Get instant feedback on footwork, shot selection, court coverage, and stamina — broken down rally by rally.</p>
+        </div>
+        <div class="feature-arrow">→</div>
+      </div>
+      <div class="feature-card reveal">
+        <div><div class="feature-num">02 / Scout</div></div>
+        <div>
+          <div class="feature-icon">◇</div>
+          <h3 class="feature-title">Tryout Intelligence</h3>
+          <p class="feature-desc">Run tryouts the right way. Record every player, get ranked insights, and identify talent with data, not gut feeling.</p>
+        </div>
+        <div class="feature-arrow">→</div>
+      </div>
+      <div class="feature-card reveal">
+        <div><div class="feature-num">03 / Track</div></div>
+        <div>
+          <div class="feature-icon">○</div>
+          <h3 class="feature-title">Coach Dashboard</h3>
+          <p class="feature-desc">Every player's recent form, win record, and improvement areas in one view. Build rosters based on who shows up — not who you remember.</p>
+        </div>
+        <div class="feature-arrow">→</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── AI ANALYZE (DARK) ───────── -->
+<section class="dark-frame section" id="analyze">
+  <div class="split">
+    <div class="split-visual reveal">
+      <span class="split-tag">01 — Analyze</span>
+      <img src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=900&q=80" alt="">
+    </div>
+    <div class="split-content reveal">
+      <span class="section-label">For Players</span>
+      <h3>One minute.<br><em style="color: var(--color-pewter); font-style: italic;">Full clarity.</em></h3>
+      <p>Set your phone down on the sideline, hit record, and play. When the minute's up, our AI rebuilds your rally into a shot-by-shot story: where you stood, what you chose, what worked, what didn't.</p>
+      <ul class="feature-list">
+        <li>
+          <span class="num">01</span>
+          <span class="text">Shot-by-shot breakdown with footwork mapping</span>
+        </li>
+        <li>
+          <span class="num">02</span>
+          <span class="text">Weakness detection — the patterns you keep repeating</span>
+        </li>
+        <li>
+          <span class="num">03</span>
+          <span class="text">Personalized drills based on your specific gaps</span>
+        </li>
+        <li>
+          <span class="num">04</span>
+          <span class="text">Side-by-side comparison with pro players</span>
+        </li>
+      </ul>
+      <a href="#start" class="btn btn-primary">Try a sample analysis →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── SCOUT (LIGHT) ───────── -->
+<section class="section" id="scout">
+  <div class="split reverse">
+    <div class="split-visual reveal">
+      <span class="split-tag" style="background: rgba(255,255,255,0.9); color: var(--color-ink-black);">02 — Scout</span>
+      <img src="https://images.unsplash.com/photo-1599391398131-cd12dfc6c24f?w=900&q=80" alt="">
+    </div>
+    <div class="split-content reveal">
+      <span class="section-label">For Tryouts</span>
+      <h3>Stop guessing.<br><em>Start knowing.</em></h3>
+      <p>Tryouts are chaos. Shuttle brings order. Record every player, log every match result, and let the AI surface the ones who actually belong on the team — not just the loudest ones in the room.</p>
+      <ul class="feature-list">
+        <li>
+          <span class="num">01</span>
+          <span class="text">One-tap recording for every player, every match</span>
+        </li>
+        <li>
+          <span class="num">02</span>
+          <span class="text">Win/loss tracking with auto-generated performance scores</span>
+        </li>
+        <li>
+          <span class="num">03</span>
+          <span class="text">Ranked leaderboard — sorted by impact, not attendance</span>
+        </li>
+        <li>
+          <span class="num">04</span>
+          <span class="text">Exportable shortlist for coaching staff review</span>
+        </li>
+      </ul>
+      <a href="#start" class="btn btn-dark">See the scouting tool →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── WORKFLOW ───────── -->
+<section class="section workflow">
+  <div class="reveal">
+    <span class="section-label">Process — 03</span>
+    <h2 class="section-title">From clip to clarity <em>in four steps.</em></h2>
+  </div>
+  <div class="workflow-grid reveal">
+    <div class="workflow-step">
+      <div class="step-num">01</div>
+      <h4 class="step-title">Record</h4>
+      <p class="step-desc">Hit record before the rally starts. One minute is all you need.</p>
+    </div>
+    <div class="workflow-step">
+      <div class="step-num">02</div>
+      <h4 class="step-title">Upload</h4>
+      <p class="step-desc">We process the clip against our badminton movement model.</p>
+    </div>
+    <div class="workflow-step">
+      <div class="step-num">03</div>
+      <h4 class="step-title">Analyze</h4>
+      <p class="step-desc">AI generates your breakdown — strengths, leaks, next move.</p>
+    </div>
+    <div class="workflow-step">
+      <div class="step-num">04</div>
+      <h4 class="step-title">Improve</h4>
+      <p class="step-desc">Get drills, position tips, and a clear focus for your next session.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── COACH DASHBOARD (DARK) ───────── -->
+<section class="dark-frame section" id="coach">
+  <div class="reveal">
+    <span class="section-label">For Coaches</span>
+    <h2 class="section-title">The whole team.<br><em>One screen.</em></h2>
+  </div>
+  <div class="split">
+    <div class="split-content reveal">
+      <p>You don't have time to review 12 players' footage. Shuttle does. Every match, every player, every result — fed into a dashboard that tells you who's hot, who's slipping, and exactly what to work on with each of them this week.</p>
+      <ul class="feature-list">
+        <li>
+          <span class="num">01</span>
+          <span class="text">Recent form graphs — who's trending up, who needs a conversation</span>
+        </li>
+        <li>
+          <span class="num">02</span>
+          <span class="text">Position recommendations based on playing style, not just height</span>
+        </li>
+        <li>
+          <span class="num">03</span>
+          <span class="text">Roster builder that factors form, fatigue, and matchup history</span>
+        </li>
+        <li>
+          <span class="num">04</span>
+          <span class="text">Per-player improvement areas — generated automatically from match data</span>
+        </li>
+      </ul>
+      <a href="#start" class="btn btn-primary">Explore the dashboard →</a>
+    </div>
+    <div class="split-visual reveal">
+      <span class="split-tag">03 — Coach</span>
+      <img src="https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?w=900&q=80" alt="">
+    </div>
+  </div>
+</section>
+
+<!-- ───────── QUOTE ───────── -->
+<section class="quote-section">
+  <div class="quote reveal">
+    <p class="quote-text">"A minute of footage used to be a clip. <em>Now it's a coach.</em>"</p>
+    <p class="quote-author">— The Shuttle Team</p>
+  </div>
+</section>
+
+<!-- ───────── CTA ───────── -->
+<section class="cta" id="start">
+  <div class="reveal">
+    <p class="cta-eyebrow">— Get Early Access</p>
+    <h2 class="cta-title">Your next rally,<br><em style="color: var(--color-pewter); font-style: italic;">decoded.</em></h2>
+    <p class="cta-sub">Join the closed beta. Free for the first 100 teams. Bring your phone, your racket, and one good minute.</p>
+    <div class="cta-actions">
+      <a href="#" class="btn btn-primary">Request Access →</a>
+      <a href="#" class="btn btn-ghost">Watch Demo</a>
+    </div>
+    <p class="cta-note">No credit card · iOS & Android · Claude & GPT-4o ready</p>
+  </div>
+</section>
+
+<!-- ───────── FOOTER ───────── -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <h4>shuttle<span style="font-weight:600;">.</span></h4>
+      <p>AI-powered badminton intelligence for players, coaches, and teams who want to win on purpose.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Product</h5>
+      <ul>
+        <li>AI Analysis</li>
+        <li>Tryout Scouting</li>
+        <li>Coach Dashboard</li>
+        <li>Pro Compare</li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Company</h5>
+      <ul>
+        <li>About</li>
+        <li>Manifesto</li>
+        <li>Careers</li>
+        <li>Contact</li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Resources</h5>
+      <ul>
+        <li>Documentation</li>
+        <li>API</li>
+        <li>Changelog</li>
+        <li>Support</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Shuttle Labs — All rights reserved</span>
+    <div class="legal">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Cookies</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 80) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  });
+
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('in'), i * 80);
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+  reveals.forEach(el => io.observe(el));
+
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

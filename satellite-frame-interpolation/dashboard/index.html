@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Satellite Frame Interpolation Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --ink: #182033;
+      --muted: #64748b;
+      --border: #d8e0ee;
+      --accent: #2563eb;
+      --good: #047857;
+      --warn: #b45309;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      padding: 1.25rem 1.5rem;
+      background: linear-gradient(135deg, #0f172a, #1d4ed8);
+      color: white;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.45rem;
+    }
+
+    header p {
+      margin: 0.35rem 0 0;
+      opacity: 0.9;
+    }
+
+    main {
+      padding: 1rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      padding: 1rem;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 1rem;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      background: #020617;
+      border: 1px solid #111827;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    button, input {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.45rem 0.65rem;
+      background: white;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+
+    button:hover {
+      background: #dbeafe;
+    }
+
+    input[type="range"] {
+      min-width: 180px;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 0.4rem;
+      text-align: right;
+    }
+
+    th:first-child, td:first-child {
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+    }
+
+    .metric-chip {
+      display: inline-block;
+      margin: 0.2rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      font-size: 0.85rem;
+    }
+
+    .error {
+      color: #b91c1c;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      padding: 0.75rem;
+      border-radius: 8px;
+    }
+
+    .chart-wrap {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Fill in the Frames Seamlessly</h1>
+    <p>AI/ML optical-flow interpolation dashboard for geostationary satellite imagery.</p>
+  </header>
+
+  <main>
+    <section id="message" class="status">Loading dashboard data…</section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Original / Ground Truth Animation</h2>
+        <div class="controls">
+          <button id="playOriginal">Play</button>
+          <button id="pauseOriginal">Pause</button>
+          <input id="originalSlider" type="range" min="0" max="0" value="0" />
+          <span id="originalLabel" class="small">Frame 0</span>
+        </div>
+        <canvas id="originalCanvas" width="640" height="480"></canvas>
+      </article>
+
+      <article class="card">
+        <h2>Interpolated Animation</h2>
+        <div class="controls">
+          <button id="playInterp">Play</button>
+          <button id="pauseInterp">Pause</button>
+          <input id="interpSlider" type="range" min="0" max="0" value="0" />
+          <span id="interpLabel" class="small">Frame 0</span>
+        </div>
+        <canvas id="interpCanvas" width="640" height="480"></canvas>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>Summary Metrics</h2>
+      <div id="metricChips" class="small"></div>
+    </section>
+
+    <section class="card">
+      <h2>Metric Plots</h2>
+      <div class="chart-wrap">
+        <div><h3>PSNR</h3><canvas id="psnrChart" width="520" height="260"></canvas></div>
+        <div><h3>SSIM</h3><canvas id="ssimChart" width="520" height="260"></canvas></div>
+        <div><h3>MSE</h3><canvas id="mseChart" width="520" height="260"></canvas></div>
+        <div><h3>FSIM-lite</h3><canvas id="fsimChart" width="520" height="260"></canvas></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Per-frame Metrics</h2>
+      <div id="tableWrap"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+skel px=115  nodes=12  edges=4
+  node 0 endpoint @ (10,40)
+  node 1 junction @ (38,39)
+  node 2 junction @ (39,38)
+  node 3 junction @ (39,39)
+  node 4 junction @ (39,40)
+  edge 1->10  len=26.0  px=27
+  edge 2->11  len=26.0  px=27
+  edge 4->5  len=27.0  px=28
+  edge 7->8  len=28.0  px=29

@@ -1,0 +1,2 @@
+before heal: nodes=6 edges=2
+after  heal: nodes=6 edges=3  info={'added': 1, 'candidates': 1, 'lcc_before': 2, 'lcc_after': 3, 'lcc_pct_increase': 50.0}
