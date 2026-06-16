@@ -4,150 +4,129 @@ prefix: mpls
 
 mgmt:
   network: management
-  bridge: br-mpls
-  ipv4-subnet: 172.20.0.0/24
+  ipv4-subnet: 172.30.0.0/24
 
 topology:
   nodes:
     # ── Core MPLS Provider Routers (P role) ──
     p-core-1:
       kind: linux
-      image: frrouting/frr:v8.4.2
-      mgmt-ipv4: 172.20.0.10
+      image: quay.io/frrouting/frr:10.0.4
+      mgmt-ipv4: 172.30.0.10
       cmd: /usr/lib/frr/docker-start
       binds:
         - node-frr.conf:/etc/frr/frr.conf
         - daemons:/etc/frr/daemons
       env:
         FRR_DEFAULTS: traditional
-      ports:
-        - "161:161/udp"
 
     p-core-2:
       kind: linux
-      image: frrouting/frr:v8.4.2
-      mgmt-ipv4: 172.20.0.11
+      image: quay.io/frrouting/frr:10.0.4
+      mgmt-ipv4: 172.30.0.11
       cmd: /usr/lib/frr/docker-start
       binds:
         - node-frr.conf:/etc/frr/frr.conf
         - daemons:/etc/frr/daemons
       env:
         FRR_DEFAULTS: traditional
-      ports:
-        - "161:161/udp"
 
     # ── Hub Site PE Routers ──
     pe-hub-east-1:
       kind: linux
-      image: frrouting/frr:v8.4.2
-      mgmt-ipv4: 172.20.0.20
+      image: quay.io/frrouting/frr:10.0.4
+      mgmt-ipv4: 172.30.0.20
       cmd: /usr/lib/frr/docker-start
       binds:
         - node-frr.conf:/etc/frr/frr.conf
         - daemons:/etc/frr/daemons
       env:
         FRR_DEFAULTS: traditional
-      ports:
-        - "161:161/udp"
 
     pe-hub-west-1:
       kind: linux
-      image: frrouting/frr:v8.4.2
-      mgmt-ipv4: 172.20.0.21
+      image: quay.io/frrouting/frr:10.0.4
+      mgmt-ipv4: 172.30.0.21
       cmd: /usr/lib/frr/docker-start
       binds:
         - node-frr.conf:/etc/frr/frr.conf
         - daemons:/etc/frr/daemons
       env:
         FRR_DEFAULTS: traditional
-      ports:
-        - "161:161/udp"
 
     # ── Datacenter PE Routers ──
     pe-dc-1:
       kind: linux
-      image: frrouting/frr:v8.4.2
-      mgmt-ipv4: 172.20.0.30
+      image: quay.io/frrouting/frr:10.0.4
+      mgmt-ipv4: 172.30.0.30
       cmd: /usr/lib/frr/docker-start
       binds:
         - node-frr.conf:/etc/frr/frr.conf
         - daemons:/etc/frr/daemons
       env:
         FRR_DEFAULTS: traditional
-      ports:
-        - "161:161/udp"
 
     pe-dc-2:
       kind: linux
-      image: frrouting/frr:v8.4.2
-      mgmt-ipv4: 172.20.0.31
+      image: quay.io/frrouting/frr:10.0.4
+      mgmt-ipv4: 172.30.0.31
       cmd: /usr/lib/frr/docker-start
       binds:
         - node-frr.conf:/etc/frr/frr.conf
         - daemons:/etc/frr/daemons
       env:
         FRR_DEFAULTS: traditional
-      ports:
-        - "161:161/udp"
 
     # ── Branch Site CE/SD-WAN Routers ──
     ce-branch-1:
       kind: linux
-      image: frrouting/frr:v8.4.2
-      mgmt-ipv4: 172.20.0.40
+      image: quay.io/frrouting/frr:10.0.4
+      mgmt-ipv4: 172.30.0.40
       cmd: /usr/lib/frr/docker-start
       binds:
         - node-frr.conf:/etc/frr/frr.conf
         - daemons:/etc/frr/daemons
       env:
         FRR_DEFAULTS: traditional
-      ports:
-        - "161:161/udp"
 
     ce-branch-2:
       kind: linux
-      image: frrouting/frr:v8.4.2
-      mgmt-ipv4: 172.20.0.41
+      image: quay.io/frrouting/frr:10.0.4
+      mgmt-ipv4: 172.30.0.41
       cmd: /usr/lib/frr/docker-start
       binds:
         - node-frr.conf:/etc/frr/frr.conf
         - daemons:/etc/frr/daemons
       env:
         FRR_DEFAULTS: traditional
-      ports:
-        - "161:161/udp"
 
     ce-branch-3:
       kind: linux
-      image: frrouting/frr:v8.4.2
-      mgmt-ipv4: 172.20.0.42
+      image: quay.io/frrouting/frr:10.0.4
+      mgmt-ipv4: 172.30.0.42
       cmd: /usr/lib/frr/docker-start
       binds:
         - node-frr.conf:/etc/frr/frr.conf
         - daemons:/etc/frr/daemons
       env:
         FRR_DEFAULTS: traditional
-      ports:
-        - "161:161/udp"
 
     ce-branch-4:
       kind: linux
-      image: frrouting/frr:v8.4.2
-      mgmt-ipv4: 172.20.0.43
+      image: quay.io/frrouting/frr:10.0.4
+      mgmt-ipv4: 172.30.0.43
       cmd: /usr/lib/frr/docker-start
       binds:
         - node-frr.conf:/etc/frr/frr.conf
         - daemons:/etc/frr/daemons
       env:
         FRR_DEFAULTS: traditional
-      ports:
-        - "161:161/udp"
 
     # ── Telemetry Collector Node ──
     telegraf-collector:
       kind: linux
       image: telegraf:1.28-alpine
-      mgmt-ipv4: 172.20.0.100
+      mgmt-ipv4: 172.30.0.100
       cmd: /usr/bin/telegraf --config /etc/telegraf/telegraf.conf
       binds:
         - telegraf.conf:/etc/telegraf/telegraf.conf
@@ -160,7 +139,7 @@ topology:
     prometheus:
       kind: linux
       image: prom/prometheus:v2.47.0
-      mgmt-ipv4: 172.20.0.110
+      mgmt-ipv4: 172.30.0.110
       cmd: /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.retention.time=90d
       binds:
         - prometheus.yml:/etc/prometheus/prometheus.yml
@@ -171,7 +150,7 @@ topology:
     timescaledb:
       kind: linux
       image: timescale/timescaledb:latest-pg15
-      mgmt-ipv4: 172.20.0.120
+      mgmt-ipv4: 172.30.0.120
       cmd: postgres
       env:
         POSTGRES_PASSWORD: noc_copilot_db
