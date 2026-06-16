@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pth
+*.pkl
+*.log
+.env
+.DS_Store
+.vscode/
+.idea/
+synthetic_telemetry.csv
+models/
+checkpoints/
+index/

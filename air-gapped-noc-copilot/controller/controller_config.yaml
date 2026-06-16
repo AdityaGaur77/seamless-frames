@@ -20,7 +20,7 @@ fail_loud: true                  # publish a banner on any cycle error
 # ── Live telemetry sampler (Phase 1 / 2) ────────────────────────
 sampler:
   backend: timescaledb           # timescaledb | prometheus | fixture
-  sequence_length: 60            # lookback window in ticks
+  sequence_length: 10            # lookback window in ticks
   num_features: 25               # MUST match data_preprocessor.PreprocessingConfig
   tick_seconds: 10
   poll_timeout_seconds: 5

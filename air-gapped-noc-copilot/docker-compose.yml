@@ -114,6 +114,29 @@ services:
     depends_on:
       - prometheus
 
+  # ── Telemetry Feeder (synthetic data generator) ────────────
+  # Continuously inserts realistic SNMP/BGP telemetry so the
+  # orchestrator always has fresh data.  Every ~200s it injects
+  # an anomalous spike to trigger the full RAG + LLM path.
+  telemetry-feeder:
+    build:
+      context: .
+      dockerfile: Dockerfile.feeder
+    container_name: noc-telemetry-feeder
+    restart: unless-stopped
+    environment:
+      - DB_HOST=172.20.0.120
+      - DB_PORT=5432
+      - DB_NAME=noc_telemetry
+      - DB_USER=postgres
+      - DB_PASSWORD=noc_copilot_db
+    networks:
+      noc-network:
+        ipv4_address: 172.20.0.150
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+
   # ── Orchestrator (the NOC Copilot brain) ───────────────────
   # Builds from the local Dockerfile.  Connects to TimescaleDB
   # for live telemetry, Prometheus as fallback, and the Ollama
@@ -137,7 +160,6 @@ services:
     volumes:
       - ./controller/controller_config.yaml:/app/controller/controller_config.yaml:ro
       - ./best_model.pth:/app/best_model.pth:ro
-      - ./best_model.pth.scalers.pkl:/app/best_model.pth.scalers.pkl:ro
     networks:
       noc-network:
         ipv4_address: 172.20.0.200

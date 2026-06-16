@@ -87,26 +87,59 @@ class ModelScorer:
         self.num_features = num_features
         self.forecast_horizon = forecast_horizon
         self._scaler: Dict[str, Any] = {}
-        self._model: torch.nn.Module = self._build_model(
+        # Load checkpoint first to auto-detect architecture
+        self._model, self.architecture = self._build_and_load(
             hidden_size=hidden_size,
             num_layers=num_layers,
         )
-        self._load()
 
     # ── lifecycle ─────────────────────────────────────────────────
 
+    @staticmethod
+    def _detect_architecture(state: Dict[str, Any]) -> str:
+        """Infer model class from state_dict key names."""
+        keys = set(state.keys())
+        if "forecast_head.0.weight" in keys:
+            return "lstm_multitask"
+        if "attention.in_proj_weight" in keys:
+            return "lstm"
+        if "tcn.network.0.conv1.weight" in keys or "network.0.conv1.weight" in keys:
+            return "tcn"
+        if "tcn.0.conv1.weight" in keys:
+            return "hybrid"
+        return "lstm"  # safe fallback
+
+    @staticmethod
+    def _detect_forecast_horizon(state: Dict[str, Any], arch: str) -> Optional[int]:
+        """Infer forecast_horizon from checkpoint fc3 output dimension."""
+        # For lstm/lstm_multitask: fc3.weight shape is (output_size * forecast_horizon, hidden//2)
+        # For tcn/hybrid: final layer differs but same pattern
+        fc3_key = "fc3.weight"
+        if arch == "lstm_multitask":
+            # Try forecast_head first
+            fh_key = "forecast_head.0.weight"
+            if fh_key in state:
+                out = state[fh_key].shape[0]  # (out_features, ...)
+                return out  # output_size=1 for LSTM, so out == horizon
+        if fc3_key in state:
+            out = state[fc3_key].shape[0]  # (output_size * horizon, hidden//2)
+            # output_size is typically 1; horizon = out // output_size
+            # We can't know output_size exactly, but default is 1
+            return out  # likely horizon (output_size=1)
+        return None
+
     def _build_model(
-        self, *, hidden_size: int, num_layers: int
+        self, *, hidden_size: int, num_layers: int, architecture: str
     ) -> torch.nn.Module:
-        if self.architecture == "lstm_multitask":
+        if architecture == "lstm_multitask":
             return LSTMMultiTask(
                 input_size=self.num_features,
                 hidden_size=hidden_size,
                 num_layers=num_layers,
                 forecast_horizon=self.forecast_horizon,
-                dropout=0.0,  # inference; dropout irrelevant
+                dropout=0.0,
             )
-        if self.architecture == "lstm":
+        if architecture == "lstm":
             return LSTMPredictor(
                 input_size=self.num_features,
                 hidden_size=hidden_size,
@@ -115,35 +148,64 @@ class ModelScorer:
                 dropout=0.0,
                 forecast_horizon=self.forecast_horizon,
             )
-        if self.architecture == "tcn":
+        if architecture == "tcn":
             return TCNPredictor(
                 input_size=self.num_features,
                 forecast_horizon=self.forecast_horizon,
                 dropout=0.0,
             )
-        if self.architecture == "hybrid":
+        if architecture == "hybrid":
             return TCNLSTMHybrid(
                 input_size=self.num_features,
                 forecast_horizon=self.forecast_horizon,
                 dropout=0.0,
             )
-        raise ValueError(f"Unknown architecture: {self.architecture}")
+        raise ValueError(f"Unknown architecture: {architecture}")
 
-    def _load(self) -> None:
+    def _build_and_load(
+        self, *, hidden_size: int, num_layers: int
+    ) -> tuple[torch.nn.Module, str]:
+        """Build the correct model class and load checkpoint weights."""
         if not self.checkpoint_path.exists():
             raise FileNotFoundError(
                 f"Checkpoint not found at {self.checkpoint_path}. "
                 "Run train_models.py first."
             )
         state = torch.load(self.checkpoint_path, map_location=self.device)
-        if isinstance(state, dict) and "model_state_dict" in state:
-            self._model.load_state_dict(state["model_state_dict"])
-        else:
-            self._model.load_state_dict(state)  # raw state_dict fallback
-        self._model.eval()
-        self._model.to(self.device)
+        raw_state = state.get("model_state_dict", state) if isinstance(state, dict) else state
 
-        if self.scaler_path and self.scaler_path.exists():
+        # Auto-detect architecture from checkpoint keys
+        detected = self._detect_architecture(raw_state)
+        LOG.info(
+            "Checkpoint architecture detected: %s (configured: %s)",
+            detected, self.architecture,
+        )
+        if detected != self.architecture:
+            LOG.warning(
+                "Architecture mismatch — using detected '%s' instead of configured '%s'",
+                detected, self.architecture,
+            )
+            self.architecture = detected
+
+        # Auto-detect forecast_horizon from checkpoint
+        detected_horizon = self._detect_forecast_horizon(raw_state, self.architecture)
+        if detected_horizon is not None and detected_horizon != self.forecast_horizon:
+            LOG.warning(
+                "forecast_horizon mismatch — using %d (from checkpoint) instead of %d (configured)",
+                detected_horizon, self.forecast_horizon,
+            )
+            self.forecast_horizon = detected_horizon
+
+        model = self._build_model(
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            architecture=self.architecture,
+        )
+        model.load_state_dict(raw_state)
+        model.eval()
+        model.to(self.device)
+
+        if self.scaler_path and self.scaler_path.is_file():
             with open(self.scaler_path, "rb") as f:
                 self._scaler = pickle.load(f)
         else:
@@ -153,6 +215,8 @@ class ModelScorer:
                 self.scaler_path,
             )
 
+        return model, self.architecture
+
     # ── fingerprinting ────────────────────────────────────────────
 
     def checkpoint_sha256(self) -> str:
@@ -161,7 +225,7 @@ class ModelScorer:
         return h.hexdigest()
 
     def scaler_sha256(self) -> str:
-        if not self.scaler_path or not self.scaler_path.exists():
+        if not self.scaler_path or not self.scaler_path.is_file():
             return hashlib.sha256(b"NO_SCALER").hexdigest()
         h = hashlib.sha256()
         h.update(self.scaler_path.read_bytes())

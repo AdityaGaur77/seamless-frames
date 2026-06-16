@@ -1,0 +1,5 @@
+FROM python:3.11-slim
+RUN pip install --no-cache-dir psycopg2-binary
+WORKDIR /app
+COPY seed_telemetry.py .
+ENTRYPOINT ["python", "-u", "seed_telemetry.py"]
